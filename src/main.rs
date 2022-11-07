@@ -7,16 +7,16 @@ pub mod days;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    // Day to run
-   #[arg(short, long, default_value_t = String::new())]
+    /// Day to run e.g. 202201
+   #[arg(short, long)]
    day: String,
 
-   // Input type to run
-   #[arg(short, long, default_value_t = String::new())]
+   /// Input type to run (S for sample and A for actual)
+   #[arg(short, long)]
    input: String,
 
-   // stage number (1,2)
-   #[arg(short, long, default_value_t = String::new())]
+   /// stage number (1,2)
+   #[arg(short, long)]
    stage: String,
 }
 
