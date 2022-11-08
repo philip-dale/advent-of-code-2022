@@ -50,3 +50,84 @@ pub struct HighLowCounts{
     pub low: u64,
     pub high: u64,
 }
+
+pub struct BingoBoard {
+    board: Vec<Vec<u64>>,
+    marked: Vec<Vec<bool>>,
+}
+
+impl BingoBoard {
+    pub fn new(s: &str) -> Result<Self, std::num::ParseIntError> {
+        let mut bv: Vec<Vec<u64>> = Vec::new();
+        let mut mv: Vec<Vec<bool>> = Vec::new();
+        for line in s.lines() {
+            let mut lv: Vec<u64> = Vec::new();
+            for n in line.split_whitespace() {
+                lv.push(n.parse()?);
+            }
+            mv.push(vec![false; lv.len()]);
+            bv.push(lv);
+        }
+        return Ok(Self { board: bv, marked: mv });
+    }
+
+    pub fn play(&mut self, n: u64) {
+        'outer: for i in 0..self.board.len()  {
+            for j in 0..self.board[i].len()  {
+                if self.board[i][j] == n {
+                    self.marked[i][j] = true;
+                    break 'outer;
+                }
+            }
+        }
+    }
+
+    pub fn line_win(&self) -> bool {
+        for i in 0..self.marked.len() {
+            let mut row = true;
+            for j in 0..self.marked[i].len() {
+                if !self.marked[i][j] {
+                    row = false;
+                    break;
+                }
+            }
+            if row {
+                return true;
+            }
+        }
+
+        for j in 0..self.marked[0].len() {
+            let mut col = true;
+            for i in 0..self.marked.len() {
+                if !self.marked[i][j] {
+                    col = false;
+                    break;
+                }
+            }
+            if col {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn get_sum(&self, marked: bool) -> u64 {
+        let mut sum: u64 = 0;
+        for i in 0..self.marked.len() {
+            for j in 0..self.marked[i].len() {
+                if self.marked[i][j] == marked {
+                    sum += self.board[i][j];
+                }
+            }
+        }
+        return sum;
+    }
+}
+
+impl std::str::FromStr for BingoBoard {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        return Ok(BingoBoard::new(s)?);
+    }
+}
