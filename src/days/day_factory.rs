@@ -3,7 +3,9 @@ use std::fmt;
 
 use super::input_reader;
 
+mod types;
 mod day_202101;
+mod day_202102;
 mod day_202201;
 mod day_202202;
 mod day_202203;
@@ -55,6 +57,7 @@ pub trait Day {
 pub fn get_day(day: String) -> Result<Box<dyn Day>, Box<dyn Error>> {
     match day.as_str() {
         "202101" => return Ok(Box::new(day_202101::Day202101{})),
+        "202102" => return Ok(Box::new(day_202102::Day202102{})),
         "202201" => return Ok(Box::new(day_202201::Day202201{})),
         "202202" => return Ok(Box::new(day_202202::Day202202{})),
         "202203" => return Ok(Box::new(day_202203::Day202203{})),
