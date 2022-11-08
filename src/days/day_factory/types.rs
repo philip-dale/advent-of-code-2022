@@ -131,3 +131,89 @@ impl std::str::FromStr for BingoBoard {
         return Ok(BingoBoard::new(s)?);
     }
 }
+
+pub struct Point {
+    pub x: usize,
+    pub y: usize,
+}
+
+impl std::str::FromStr for Point {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let vals:Vec<&str> = s.split(",").collect();
+        Ok(Point{
+            x: vals[0].trim().parse()?,
+            y: vals[1].trim().parse()?,
+        })
+    }
+}
+
+pub struct LineVector {
+    pub s: Point,
+    pub e: Point,
+}
+
+impl LineVector {
+    pub fn is_diag(&self) -> bool {
+        return !(self.e.x == self.s.x || self.e.y == self.s.y);
+    }
+
+    pub fn steps(&self) -> usize {
+        let x_steps = if self.s.x > self.e.x {
+            self.s.x - self.e.x
+        } else {
+            self.e.x - self.s.x
+        };
+
+        let y_steps = if self.s.y > self.e.y {
+            self.s.y - self.e.y
+        } else {
+            self.e.y - self.s.y
+        };
+
+        if x_steps > y_steps {
+            return x_steps+1;
+        }
+        return y_steps+1;
+    }
+}
+
+impl std::str::FromStr for LineVector {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let points:Vec<&str> = s.split("->").collect();
+        Ok(LineVector {
+            s: points[0].parse()?,
+            e: points[1].parse()?,
+        })
+    }
+}
+pub struct Lines {
+    pub vectors: Vec<LineVector>,
+}
+
+impl Lines {
+    pub fn get_max(&self) -> (usize, usize) {
+        let mut x_max = 0;
+        let mut y_max = 0;
+
+        for v in &self.vectors {
+            if v.s.x > x_max {
+                x_max = v.s.x;
+            }
+            if v.e.x > x_max {
+                x_max = v.e.x;
+            }
+            if v.s.y > y_max {
+                y_max = v.s.y;
+            }
+            if v.e.y > x_max {
+                y_max = v.e.y;
+            }
+        }
+
+        return (x_max+1, y_max+1);
+    }
+}
