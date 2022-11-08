@@ -22,18 +22,21 @@ struct Args {
    /// stage number (1,2)
    #[arg(short, long)]
    stage: String,
+
+   /// base directory e.g input
+   #[arg(short, long, default_value_t = String::from("input"))]
+   base_dir: String,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     let ipr = input_reader::InputReader {
-        filename: args.year.to_string() + &args.day[..] + "-" + &args.input[..],
-        directory: String::from("input/") + &args.year[..],
+        filename: args.day.to_string() + "-" + &args.input[..],
+        directory: args.base_dir.to_string() + "/" + &args.year[..],
         stage: args.stage.to_string(),
     };
 
-    println!("Testing File {0}", ipr.fullname()?);
-    println!("----");
+    println!("Running Year {0} day {1} stage {2} input {3}", args.year, args.day, args.stage, args.input);
     println!("{}",days::run_day(args.year.to_string() + &args.day[..], ipr)?);
 
     Ok(())
