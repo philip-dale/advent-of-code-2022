@@ -1,10 +1,10 @@
 use std::error::Error;
-use super::input_reader;
+use crate::input_reader;
 use crate::days::day_factory::Day;
 
-pub struct Day202101{}
+pub struct Day01{}
 
-impl Day for Day202101 {
+impl Day for Day01 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: Vec<u64> = ipr.vec_1d()?;
         let mut last = data[0];

@@ -1,9 +1,9 @@
 use std::error::Error;
-use super::input_reader;
+use crate::input_reader;
 use crate::days::day_factory::Day;
 use crate::days::day_factory::types::{Bits, HighLowCounts};
 
-pub struct Day202103{}
+pub struct Day03{}
 
 fn count_bits(data: &Vec<Bits>, start: usize, len: usize) -> Vec<HighLowCounts> {
     let mut counts: Vec<HighLowCounts> = vec![HighLowCounts{low: 0, high: 0}; len];
@@ -44,7 +44,7 @@ fn strip_unwanted(data: &mut Vec<Bits>, is_high: bool) {
     }
 }
 
-impl Day for Day202103 {
+impl Day for Day03 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: Vec<Bits> = ipr.vec_1d()?;
         let counts = count_bits(&data, 0, data[0].bits.len());

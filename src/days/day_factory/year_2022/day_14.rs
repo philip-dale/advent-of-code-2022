@@ -1,10 +1,10 @@
 use std::error::Error;
-use super::input_reader;
+use crate::input_reader;
 use crate::days::day_factory::Day;
 
-pub struct Day202219{}
+pub struct Day14{}
 
-impl Day for Day202219 {
+impl Day for Day14 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         return Ok(ipr.fullname()?);
     }

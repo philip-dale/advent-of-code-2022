@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use super::input_reader;
+use crate::input_reader;
 
 mod day_factory;
 

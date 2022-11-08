@@ -1,9 +1,9 @@
 use std::error::Error;
-use super::input_reader;
+use crate::input_reader;
 use crate::days::day_factory::Day;
 use crate::days::day_factory::types as DayTypes;
 
-pub struct Day202102{}
+pub struct Day02{}
 
 struct Pos1 {
     horizontal: u64,
@@ -16,7 +16,7 @@ struct Pos2 {
     aim: u64,
 }
 
-impl Day for Day202102 {
+impl Day for Day02 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: Vec<DayTypes::StrU64> = ipr.vec_1d()?;
 
