@@ -40,7 +40,7 @@ fn lines_to_map(lines: &Lines, no_diag: bool) -> Vec<Vec<u64>> {
 impl Day for Day05 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data = Lines{
-            vectors: ipr.vec_1d()?,
+            vectors: ipr.vec_1d_newln()?,
         };
 
         let vents = lines_to_map(&data, true);
@@ -58,7 +58,7 @@ impl Day for Day05 {
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data = Lines{
-            vectors: ipr.vec_1d()?,
+            vectors: ipr.vec_1d_newln()?,
         };
 
         let vents = lines_to_map(&data, false);

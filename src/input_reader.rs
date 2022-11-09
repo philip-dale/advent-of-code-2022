@@ -8,12 +8,22 @@ pub struct InputReader {
 }
 
 impl InputReader {
-    pub fn vec_1d<T: std::str::FromStr>(&self) -> Result<Vec<T>, Error> where <T as std::str::FromStr>::Err: std::fmt::Debug
+    pub fn vec_1d_newln<T: std::str::FromStr>(&self) -> Result<Vec<T>, Error> where <T as std::str::FromStr>::Err: std::fmt::Debug
     {
         let br = BufReader::new(File::open(self.fullname()?)?);
         let mut v = vec![];
         for line in br.lines() {
-            v.push(line?.trim().parse().expect("u64 not found"));
+            v.push(line?.trim().parse().expect("Type not found"));
+        }
+        return Ok(v);
+    }
+
+    pub fn vec_1d_sep<T: std::str::FromStr>(&self, sep: &String) -> Result<Vec<T>, Error> where <T as std::str::FromStr>::Err: std::fmt::Debug
+    {
+        let s = read_to_string(self.fullname()?).unwrap();
+        let mut v = vec![];
+        for line in s.split(sep) {
+            v.push(line.trim().parse().expect("Type not found"));
         }
         return Ok(v);
     }

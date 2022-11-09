@@ -46,7 +46,7 @@ fn strip_unwanted(data: &mut Vec<Bits>, is_high: bool) {
 
 impl Day for Day03 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let data: Vec<Bits> = ipr.vec_1d()?;
+        let data: Vec<Bits> = ipr.vec_1d_newln()?;
         let counts = count_bits(&data, 0, data[0].bits.len());
 
         let mut gamma: u64 = 0;
@@ -68,7 +68,7 @@ impl Day for Day03 {
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let mut data: Vec<Bits> = ipr.vec_1d()?;
+        let mut data: Vec<Bits> = ipr.vec_1d_newln()?;
         let mut data2 = data.clone();
 
         strip_unwanted(&mut data, true);

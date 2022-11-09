@@ -18,7 +18,7 @@ struct Pos2 {
 
 impl Day for Day02 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let data: Vec<DayTypes::StrU64> = ipr.vec_1d()?;
+        let data: Vec<DayTypes::StrU64> = ipr.vec_1d_newln()?;
 
         let mut pos = Pos1{horizontal: 0, depth: 0};
         for m in data {
@@ -34,7 +34,7 @@ impl Day for Day02 {
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let data: Vec<DayTypes::StrU64> = ipr.vec_1d()?;
+        let data: Vec<DayTypes::StrU64> = ipr.vec_1d_newln()?;
 
         let mut pos = Pos2{horizontal: 0, depth: 0, aim: 0};
         for m in data {

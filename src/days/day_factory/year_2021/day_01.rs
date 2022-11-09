@@ -6,7 +6,7 @@ pub struct Day01{}
 
 impl Day for Day01 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let data: Vec<u64> = ipr.vec_1d()?;
+        let data: Vec<u64> = ipr.vec_1d_newln()?;
         let mut last = data[0];
         let mut count = 0;
         for p in 1..data.len() {
@@ -20,7 +20,7 @@ impl Day for Day01 {
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let data: Vec<u64> = ipr.vec_1d()?;
+        let data: Vec<u64> = ipr.vec_1d_newln()?;
         let mut last = data[0] + data[1] + data[2];
         let mut count = 0;
         for p in 3..data.len()-2 {
