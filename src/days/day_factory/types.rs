@@ -217,3 +217,30 @@ impl Lines {
         return (x_max+1, y_max+1);
     }
 }
+
+pub struct CharNumGrid {
+    pub cells: Vec<Vec<u32>>,
+}
+
+impl std::str::FromStr for CharNumGrid {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        return Ok(CharNumGrid {
+            cells: {
+                let mut v: Vec<Vec<u32>> = Vec::new();
+                for l in s.lines() {
+                    v.push(Vec::new());
+                    let last = v.len()-1;
+                    for c in l.chars() {
+                        v[last].push(c.to_digit(10).unwrap());
+                    }
+                }
+                v
+            },
+        });
+
+
+        
+    }
+}
