@@ -257,3 +257,18 @@ impl std::str::FromStr for CharList {
         })
     }
 }
+
+
+//////////////////////////////
+/// Functions
+/// 
+
+pub fn get_range(val: usize, max: usize, range: usize) -> (usize, usize){
+    if val < range{
+        (val, val+range)
+    } else if val > max-range{
+        (val-range, val)
+    } else {
+        (val-range, val+range)
+    }
+}
