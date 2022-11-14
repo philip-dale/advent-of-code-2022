@@ -239,8 +239,21 @@ impl std::str::FromStr for CharNumGrid {
                 v
             },
         });
+    }
+}
 
+pub struct CharList {
+    pub items: Vec<char>,
+}
 
-        
+impl std::str::FromStr for CharList {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        return Ok({
+            CharList {
+                items: s.chars().collect(),
+            }
+        })
     }
 }
