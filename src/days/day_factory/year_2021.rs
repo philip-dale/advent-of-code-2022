@@ -13,6 +13,7 @@ pub mod day_09;
 pub mod day_10;
 pub mod day_11;
 pub mod day_12;
+pub mod day_13;
 
 pub fn get_day(day: String) -> Result<Box<dyn Day>, Box<dyn Error>> {
     match day.as_str() {
@@ -28,6 +29,7 @@ pub fn get_day(day: String) -> Result<Box<dyn Day>, Box<dyn Error>> {
         "10" => return Ok(Box::new(day_10::Day10{})),
         "11" => return Ok(Box::new(day_11::Day11{})),
         "12" => return Ok(Box::new(day_12::Day12{})),
+        "13" => return Ok(Box::new(day_13::Day13{})),
         _ => return Err(Box::new(DayError("Unknown Day 2021".into()))),
     }
 }
