@@ -5,39 +5,51 @@ use crate::input_reader;
 use crate::days::day_factory::Day;
 
 struct Polymer {
-    val: String,
+    val: HashMap<String, u64>,
     instructions: HashMap<String, String>,
+    last_char: String
+}
+
+fn hash_add_or_update(h:& mut HashMap<String, u64>, k:String, count:u64) {
+    h.entry(k).and_modify(|v| {*v += count}).or_insert(count);
 }
 
 impl Polymer {
     pub fn step(& mut self) {
-        let mut insert: Vec<String> = Vec::new();
-        for i in 0..self.val.len()-1 {
-            insert.push(self.instructions.get(&self.val[i..i+2]).unwrap().to_string());
+        let mut new:HashMap<String, u64> = HashMap::new();
+        for (k, count) in self.val.iter() {
+
+            let r = self.instructions.get(k).unwrap();
+            let v1 = k[0..1].to_string() + r;
+            let v2 = r.to_string() + &k[1..2].to_string();
+            hash_add_or_update(& mut new, v1, *count);
+            hash_add_or_update(& mut new, v2, *count);
         }
-        for i in (0..self.val.len()-1).rev() {
-            self.val.insert_str(i+1, &insert[i]);
-        }
+
+        self.val = new;
     }
 
     pub fn steps(& mut self, count: usize) {
-        for i in 0..count {
-            println!("{}", i);
+        for _i in 0..count {
             self.step();
         }
+        self.val.insert(self.last_char.to_string(), 1);
     }
 
-    pub fn result(&self) -> usize{
-        let mut poly_str: Vec<char> = self.val.chars().collect();
-        poly_str.sort();
-        let mut min_val = poly_str.len();
-        let mut max_val = 0;
+    pub fn result(&self) -> u64{
+        
+        let mut keys: Vec<&String> = self.val.keys().collect();
+        keys.sort();
 
-        let mut current = poly_str[0];
+        let mut min_val = u64::MAX;
+        let mut max_val = 0;
+        let mut current = &keys[0][0..1];
         let mut current_count = 0;
-        for c in poly_str{
-            if c == current {
-                current_count += 1;
+
+        for k in keys{
+            let c = &k[0..1];
+            if *c == *current {
+                current_count += self.val.get(k).unwrap();
             } else {
                 if current_count > max_val {
                     max_val = current_count;
@@ -46,8 +58,14 @@ impl Polymer {
                     min_val = current_count;
                 }
                 current = c;
-                current_count = 1;
+                current_count = *self.val.get(k).unwrap();
             }
+        }
+        if current_count > max_val {
+            max_val = current_count;
+        }
+        if current_count < min_val {
+            min_val = current_count;
         }
         return max_val - min_val;
     }
@@ -58,12 +76,16 @@ impl std::str::FromStr for Polymer {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut p = Polymer{
-            val: String::from(""),
+            val: HashMap::new(),
             instructions: HashMap::new(),
+            last_char: String::from(""),
         };
         for (i, l) in s.lines().enumerate(){
             if i == 0 {
-                p.val = l.to_string();
+                for i in 0..l.len()-1 {
+                    hash_add_or_update(& mut p.val, l[i..i+2].to_string(),1);
+                }
+                p.last_char = l[l.len()-1..l.len()].to_string();
             } else if i > 1 {
                 let s:Vec<&str> = l.split(" -> ").collect();
                 p.instructions.insert(s[0].trim().to_string(), s[1].trim().to_string());
