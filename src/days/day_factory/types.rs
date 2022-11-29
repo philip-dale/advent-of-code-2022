@@ -138,6 +138,82 @@ pub struct Point {
     pub y: usize,
 }
 
+
+impl Point {
+    #[allow(dead_code)]
+    pub fn get_all_neighbours(&self, x_max_value: usize, y_max_value: usize) -> Vec<Self> {
+        let x_start = match self.x {
+            0 => 0,
+            _ => self.x -1,
+        };
+
+        let y_start = match self.y {
+            0 => 0,
+            _ => self.y -1,
+        };
+
+        let x_end = match self.x {
+            x if x >= x_max_value => x_max_value + 1,
+            _ => self.x + 2,
+        };
+
+        let y_end = match self.y {
+            y if y >= y_max_value => y_max_value + 1,
+            _ => self.y + 2,
+        };
+
+        let mut n:Vec<Self> = Vec::new();
+        for x in x_start..x_end {
+            for y in y_start..y_end {
+                if x == self.x && y == self.y {
+                    continue;
+                }
+                n.push(Self{x,y});
+            }
+        }
+        return n;
+
+    }
+    #[allow(dead_code)]
+    pub fn get_adjacent_neighbours(&self, x_max_value: usize, y_max_value: usize) -> Vec<Self> {
+        let x_start = match self.x {
+            0 => 0,
+            _ => self.x -1,
+        };
+
+        let y_start = match self.y {
+            0 => 0,
+            _ => self.y -1,
+        };
+
+        let x_end = match self.x {
+            x if x >= x_max_value => x_max_value + 1,
+            _ => self.x + 2,
+        };
+
+        let y_end = match self.y {
+            y if y >= y_max_value => y_max_value + 1,
+            _ => self.y + 2,
+        };
+
+        let mut n:Vec<Self> = Vec::new();
+        for x in x_start..x_end {
+            if x == self.x {
+                continue;
+            }
+            n.push(Self{x, y: self.y});
+        }
+        for y in y_start..y_end {
+            if y == self.y {
+                continue;
+            }
+            n.push(Self{x:self.x, y});
+        }
+        return n;
+
+    }
+}
+
 impl std::str::FromStr for Point {
     type Err = std::num::ParseIntError;
 
