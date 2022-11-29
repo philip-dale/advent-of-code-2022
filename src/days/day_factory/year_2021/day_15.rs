@@ -26,12 +26,13 @@ fn find_next_not_visited(to_visit:&HashMap<Point, u64>) -> Point {
     for (p, v) in to_visit {
         if *v < current_score {
             current_score = *v;
-            current_point = Point{x:p.x, y:p.y};
+            current_point = p.as_point();
         }
     }
     return current_point;
 }
 
+// use dijkstra to find the lowest energy path.
 fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
 
     // Store points that we have calculated a score for but not visited. We will use this to decide which node to go to next.
@@ -51,7 +52,7 @@ fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
 
                 if new_score < search_path[n.x][n.y].score {
                     search_path[n.x][n.y].score  = new_score;
-                    to_visit.insert(Point{x:n.x, y:n.y}, new_score);
+                    to_visit.insert(n.as_point(), new_score);
                 }
             }
         }

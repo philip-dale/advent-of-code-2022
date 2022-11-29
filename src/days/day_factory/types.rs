@@ -140,6 +140,10 @@ pub struct Point {
 
 
 impl Point {
+    pub fn as_point(&self) -> Self{
+        Point { x: self.x, y: self.y }
+    }
+    
     #[allow(dead_code)]
     pub fn get_all_neighbours(&self, x_max_value: usize, y_max_value: usize) -> Vec<Self> {
         let x_start = match self.x {
