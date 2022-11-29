@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 use crate::input_reader;
 use crate::days::day_factory::Day;
@@ -18,31 +19,44 @@ impl PathItem {
         }
     }
 }
-
-fn find_next_not_visited(search_path:& mut Vec<Vec<PathItem>>) -> Point {
-    
-    let mut current_score = u64::MAX;
-    let mut current_point = Point{x:usize::MAX,y:usize::MAX};
-
-    for (x, l) in search_path.iter().enumerate() {
-        for (y, v) in l.iter().enumerate() {
-            if !v.visited {
-                if v.score < current_score {
-                    current_score = v.score;
-                    current_point.x = x;
-                    current_point.y = y;
-                }
-            }
-        }
-    }
-    return current_point;
+fn find_next_not_visited(remaining:&HashMap<Point, u64>) -> Point {
+    let found = remaining.iter().min_by_key(|x| x.1).unwrap().0;
+    return Point{x:found.x, y:found.y};
 }
 
+// fn find_next_not_visited(search_path:& mut Vec<Vec<PathItem>>) -> Point {
+    
+//     let mut current_score = u64::MAX;
+//     let mut current_point = Point{x:usize::MAX,y:usize::MAX};
+
+//     for (x, l) in search_path.iter().enumerate() {
+//         for (y, v) in l.iter().enumerate() {
+//             if !v.visited {
+//                 if v.score < current_score {
+//                     current_score = v.score;
+//                     current_point.x = x;
+//                     current_point.y = y;
+//                 }
+//             }
+//         }
+//     }
+//     return current_point;
+// }
+
 fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
+
+    let mut remaining:HashMap<Point, u64> = HashMap::new();
+    for (x, l) in search_path.iter().enumerate() {
+        for (y, _v) in l.iter().enumerate() {
+            remaining.insert(Point{x,y}, u64::MAX);
+        }
+    }
+
     let x_max = search_path.len()-1;
     let y_max = search_path[0].len()-1;
     let target = Point{x: search_path.len()-1, y: search_path[0].len()-1};
     let mut current = Point{x:0, y:0};
+    *remaining.get_mut(&current).unwrap() = 0;
 
     search_path[current.x][current.y].score = 0;
     let mut checked = 0;
@@ -55,13 +69,20 @@ fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
 
                 if new_score < search_path[n.x][n.y].score {
                     search_path[n.x][n.y].score  = new_score;
+                    *remaining.get_mut(&Point{x:n.x, y:n.y}).unwrap() = new_score;
                 }
             }
         }
         search_path[current.x][current.y].visited = true;
+        remaining.remove(&current);
 
         // find lowest scoring not visited cell
-        current = find_next_not_visited(search_path);
+        // current = find_next_not_visited(search_path);
+        if remaining.len() > 0 {
+            current = find_next_not_visited(&remaining);
+        } else {
+            break;
+        }
         checked += 1;
         if checked % 1000 == 0 {
             println!("checked {0} of {1}", checked, target.x * target.y);

@@ -132,7 +132,7 @@ impl std::str::FromStr for BingoBoard {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
