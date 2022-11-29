@@ -34,7 +34,6 @@ fn find_next_not_visited(to_visit:&HashMap<Point, u64>) -> Point {
 
 // use dijkstra to find the lowest energy path.
 fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
-
     // Store points that we have calculated a score for but not visited. We will use this to decide which node to go to next.
     let mut to_visit:HashMap<Point, u64> = HashMap::new();
 
@@ -69,22 +68,20 @@ fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
     return search_path[target.x][target.y].score;
 }
 
-fn expand_grid(input: CharNumGrid) -> CharNumGrid {
-
+fn expand_grid(input: CharNumGrid, multiple: usize, max_val: u32) -> CharNumGrid {
     let mut output = CharNumGrid {
-        cells: vec![vec![0;input.cells[0].len()*5]; input.cells.len()*5],
+        cells: vec![vec![0;input.cells[0].len()*multiple]; input.cells.len()*multiple],
     };
-
-    for (x, xv) in output.cells.to_vec().iter().enumerate() {
-        for (y, _yv) in xv.iter().enumerate() {
+    for x in 0..output.cells.len() {
+        for y in 0..output.cells[0].len() {
             let x_source = x % input.cells.len();
             let y_source = y % input.cells[0].len();
             let x_block = x / input.cells.len();
             let y_block = y / input.cells.len();
 
             let mut val = input.cells[x_source][y_source] + u32::try_from(x_block).unwrap() + u32::try_from(y_block).unwrap();
-            while val > 9 {
-                val -= 9;
+            while val > max_val {
+                val -= max_val;
             }
             output.cells[x][y] = val;
         }
@@ -108,19 +105,12 @@ impl Day for Day15 {
         }
         let score = scan_path(& mut search_path);
 
-        // for x in search_path {
-        //     for y in x {
-        //         print!("{:0>2},", y.score);
-        //     }
-        //     println!("");
-        // }
-
         return Ok(score.to_string());
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: CharNumGrid = ipr.whole()?;
-        let data = expand_grid(data);
+        let data = expand_grid(data, 5, 9);
         let mut search_path: Vec<Vec<PathItem>> = Vec::new();
         for x in data.cells {
             let mut search_line: Vec<PathItem> = Vec::new();
@@ -130,13 +120,6 @@ impl Day for Day15 {
             search_path.push(search_line);
         }
         let score = scan_path(& mut search_path);
-
-        // for x in search_path {
-        //     for y in x {
-        //         print!("{:0>2},", y.score);
-        //     }
-        //     println!("");
-        // }
 
         return Ok(score.to_string());
     }
