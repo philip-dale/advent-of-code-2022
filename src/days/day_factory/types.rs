@@ -143,32 +143,26 @@ impl Point {
     pub fn as_point(&self) -> Self{
         Point { x: self.x, y: self.y }
     }
-    
+
     #[allow(dead_code)]
     pub fn get_all_neighbours(&self, x_max_value: usize, y_max_value: usize) -> Vec<Self> {
-        let x_start = match self.x {
-            0 => 0,
-            _ => self.x -1,
+        let x_range = match self.x {
+            x if x > 0 && x < x_max_value => self.x-1..self.x+2,
+            0 => 0..self.x+2,
+            x if x == x_max_value => self.x-1..self.x+1,
+            _ => 0..0
         };
 
-        let y_start = match self.y {
-            0 => 0,
-            _ => self.y -1,
-        };
-
-        let x_end = match self.x {
-            x if x >= x_max_value => x_max_value + 1,
-            _ => self.x + 2,
-        };
-
-        let y_end = match self.y {
-            y if y >= y_max_value => y_max_value + 1,
-            _ => self.y + 2,
+        let y_range = match self.y {
+            y if y > 0 && y < y_max_value => self.y-1..self.y+2,
+            0 => 0..self.y+2,
+            y if y == y_max_value => self.y-1..self.y+1,
+            _ => 0..0
         };
 
         let mut n:Vec<Self> = Vec::new();
-        for x in x_start..x_end {
-            for y in y_start..y_end {
+        for x in x_range {
+            for y in y_range.clone() {
                 if x == self.x && y == self.y {
                     continue;
                 }
@@ -180,34 +174,28 @@ impl Point {
     }
     #[allow(dead_code)]
     pub fn get_adjacent_neighbours(&self, x_max_value: usize, y_max_value: usize) -> Vec<Self> {
-        let x_start = match self.x {
-            0 => 0,
-            _ => self.x -1,
+        let x_range = match self.x {
+            x if x > 0 && x < x_max_value => self.x-1..self.x+2,
+            0 => 0..self.x+2,
+            x if x == x_max_value => self.x-1..self.x+1,
+            _ => 0..0
         };
 
-        let y_start = match self.y {
-            0 => 0,
-            _ => self.y -1,
-        };
-
-        let x_end = match self.x {
-            x if x >= x_max_value => x_max_value + 1,
-            _ => self.x + 2,
-        };
-
-        let y_end = match self.y {
-            y if y >= y_max_value => y_max_value + 1,
-            _ => self.y + 2,
+        let y_range = match self.y {
+            y if y > 0 && y < y_max_value => self.y-1..self.y+2,
+            0 => 0..self.y+2,
+            y if y == y_max_value => self.y-1..self.y+1,
+            _ => 0..0
         };
 
         let mut n:Vec<Self> = Vec::new();
-        for x in x_start..x_end {
+        for x in x_range {
             if x == self.x {
                 continue;
             }
             n.push(Self{x, y: self.y});
         }
-        for y in y_start..y_end {
+        for y in y_range {
             if y == self.y {
                 continue;
             }
