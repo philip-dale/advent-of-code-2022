@@ -153,12 +153,12 @@ impl Point {
         };
 
         let x_end = match self.x {
-            x if x > x_max_value => x_max_value + 1,
+            x if x >= x_max_value => x_max_value + 1,
             _ => self.x + 2,
         };
 
         let y_end = match self.y {
-            y if y > y_max_value => y_max_value + 1,
+            y if y >= y_max_value => y_max_value + 1,
             _ => self.y + 2,
         };
 
@@ -187,12 +187,12 @@ impl Point {
         };
 
         let x_end = match self.x {
-            x if x > x_max_value => x_max_value + 1,
+            x if x >= x_max_value => x_max_value + 1,
             _ => self.x + 2,
         };
 
         let y_end = match self.y {
-            y if y > y_max_value => y_max_value + 1,
+            y if y >= y_max_value => y_max_value + 1,
             _ => self.y + 2,
         };
 
