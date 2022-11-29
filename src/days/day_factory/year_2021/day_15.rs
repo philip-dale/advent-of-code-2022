@@ -13,55 +13,37 @@ struct PathItem {
 impl PathItem {
     pub fn new(weight: u32) -> Self {
         return Self {
-            weight: weight,
+            weight,
             score: u64::MAX,
             visited: false,
         }
     }
 }
-fn find_next_not_visited(remaining:&HashMap<Point, u64>) -> Point {
-    let found = remaining.iter().min_by_key(|x| x.1).unwrap().0;
-    return Point{x:found.x, y:found.y};
+fn find_next_not_visited(to_visit:&HashMap<Point, u64>) -> Point {
+    let mut current_score = u64::MAX;
+    let mut current_point = Point{x:usize::MAX,y:usize::MAX};
+
+    for (p, v) in to_visit {
+        if *v < current_score {
+            current_score = *v;
+            current_point = Point{x:p.x, y:p.y};
+        }
+    }
+    return current_point;
 }
-
-// fn find_next_not_visited(search_path:& mut Vec<Vec<PathItem>>) -> Point {
-    
-//     let mut current_score = u64::MAX;
-//     let mut current_point = Point{x:usize::MAX,y:usize::MAX};
-
-//     for (x, l) in search_path.iter().enumerate() {
-//         for (y, v) in l.iter().enumerate() {
-//             if !v.visited {
-//                 if v.score < current_score {
-//                     current_score = v.score;
-//                     current_point.x = x;
-//                     current_point.y = y;
-//                 }
-//             }
-//         }
-//     }
-//     return current_point;
-// }
 
 fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
 
-    let mut remaining:HashMap<Point, u64> = HashMap::new();
-    for (x, l) in search_path.iter().enumerate() {
-        for (y, _v) in l.iter().enumerate() {
-            remaining.insert(Point{x,y}, u64::MAX);
-        }
-    }
+    // Store points that we have calculated a score for but not visited. We will use this to decide which node to go to next.
+    let mut to_visit:HashMap<Point, u64> = HashMap::new();
 
     let x_max = search_path.len()-1;
     let y_max = search_path[0].len()-1;
     let target = Point{x: search_path.len()-1, y: search_path[0].len()-1};
     let mut current = Point{x:0, y:0};
-    *remaining.get_mut(&current).unwrap() = 0;
 
     search_path[current.x][current.y].score = 0;
-    let mut checked = 0;
     while search_path[target.x][target.y].visited == false {
-        // println!("{0}, {1} of {2}, {3}",current.x, current.y, target.x, target.y);
         // Calculate score to neighbours
         for n in current.get_adjacent_neighbours(x_max, y_max) {
             if !search_path[n.x][n.y].visited {
@@ -69,23 +51,18 @@ fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
 
                 if new_score < search_path[n.x][n.y].score {
                     search_path[n.x][n.y].score  = new_score;
-                    *remaining.get_mut(&Point{x:n.x, y:n.y}).unwrap() = new_score;
+                    to_visit.insert(Point{x:n.x, y:n.y}, new_score);
                 }
             }
         }
         search_path[current.x][current.y].visited = true;
-        remaining.remove(&current);
+        to_visit.remove(&current);
 
         // find lowest scoring not visited cell
-        // current = find_next_not_visited(search_path);
-        if remaining.len() > 0 {
-            current = find_next_not_visited(&remaining);
+        if to_visit.len() > 0 {
+            current = find_next_not_visited(&to_visit);
         } else {
             break;
-        }
-        checked += 1;
-        if checked % 1000 == 0 {
-            println!("checked {0} of {1}", checked, target.x * target.y);
         }
     }
     return search_path[target.x][target.y].score;
