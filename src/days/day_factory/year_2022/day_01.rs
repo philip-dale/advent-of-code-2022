@@ -5,7 +5,7 @@ use crate::days::day_factory::Day;
 #[cfg(windows)]
 const GROUP_ENDING: &'static str = "\r\n\r\n";
 #[cfg(not(windows))]
-const LINE_ENDING: &'static str = "\n\n";
+const GROUP_ENDING: &'static str = "\n\n";
 
 struct Calories {
     total: Vec<u64>,
