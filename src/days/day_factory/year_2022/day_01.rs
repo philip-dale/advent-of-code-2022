@@ -2,6 +2,11 @@ use std::error::Error;
 use crate::input_reader;
 use crate::days::day_factory::Day;
 
+#[cfg(windows)]
+const GROUP_ENDING: &'static str = "\r\n\r\n";
+#[cfg(not(windows))]
+const LINE_ENDING: &'static str = "\n\n";
+
 struct Calories {
     total: Vec<u64>,
 }
@@ -33,12 +38,7 @@ impl std::str::FromStr for Calories {
             total: Vec::new(),
         };
 
-        let spliter = match s {
-            s if s.contains("\r\n\r\n") => "\r\n\r\n",
-            _ => "\n\n",
-        };
-        
-        for g in s.split(spliter).collect::<Vec<&str>>() {
+        for g in s.split(GROUP_ENDING).collect::<Vec<&str>>() {
             cal.total.push(0);
             for l in g.lines().collect::<Vec<&str>>() {
                 *cal.total.last_mut().unwrap() += l.parse::<u64>()?;
