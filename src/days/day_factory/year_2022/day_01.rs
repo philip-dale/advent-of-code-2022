@@ -34,26 +34,23 @@ impl std::str::FromStr for Calories {
             items: Vec::new(),
             total: Vec::new(),
         };
-        let ls:Vec<&str> = s.lines().collect();
-        let mut total = 0;
+        // let ls:Vec<&str> = s.lines().collect();
         let mut items: Vec<u64> = Vec::new();
 
-        for l in ls {
+        for l in s.lines().collect::<Vec<&str>>() {
             if l.len() > 0 {
                 let val = l.parse()?;
                 items.push(val);
-                total += val;
             } else {
+                cal.total.push(items.iter().sum());
                 cal.items.push(items);
                 items = Vec::new();
-                cal.total.push(total);
-                total = 0;
             }
         }
 
         if items.len() > 0 {
+            cal.total.push(items.iter().sum());
             cal.items.push(items);
-            cal.total.push(total);
         }
 
         return Ok(cal);
