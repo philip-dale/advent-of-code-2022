@@ -42,9 +42,7 @@ impl std::str::FromStr for Calories {
             for l in g.lines().collect::<Vec<&str>>() {
                 *cal.total.last_mut().unwrap() += l.parse::<u64>()?;
             }
-            
         }
-
         Ok(cal)
     }
 }
