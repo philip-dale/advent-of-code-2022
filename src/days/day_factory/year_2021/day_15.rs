@@ -12,7 +12,7 @@ struct PathItem {
 
 impl PathItem {
     pub fn new(weight: u32) -> Self {
-        return Self {
+        Self {
             weight,
             score: u64::MAX,
             visited: false,
@@ -29,7 +29,7 @@ fn find_next_not_visited(to_visit:&HashMap<Point, u64>) -> Point {
             current_point = p.as_point();
         }
     }
-    return current_point;
+    current_point
 }
 
 // use dijkstra to find the lowest energy path.
@@ -43,7 +43,7 @@ fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
     let mut current = Point{x:0, y:0};
 
     search_path[current.x][current.y].score = 0;
-    while search_path[target.x][target.y].visited == false {
+    while !search_path[target.x][target.y].visited {
         // Calculate score to neighbours
         for n in current.get_adjacent_neighbours(x_max, y_max) {
             if !search_path[n.x][n.y].visited {
@@ -59,13 +59,13 @@ fn scan_path(search_path:& mut Vec<Vec<PathItem>>) -> u64{
         to_visit.remove(&current);
 
         // find lowest scoring not visited cell
-        if to_visit.len() > 0 {
+        if !to_visit.is_empty() {
             current = find_next_not_visited(&to_visit);
         } else {
             break;
         }
     }
-    return search_path[target.x][target.y].score;
+    search_path[target.x][target.y].score
 }
 
 fn expand_grid(input: CharNumGrid, multiple: usize, max_val: u32) -> CharNumGrid {
@@ -87,7 +87,7 @@ fn expand_grid(input: CharNumGrid, multiple: usize, max_val: u32) -> CharNumGrid
         }
     }
 
-    return output;
+    output
 }
 
 pub struct Day15{}
@@ -105,7 +105,7 @@ impl Day for Day15 {
         }
         let score = scan_path(& mut search_path);
 
-        return Ok(score.to_string());
+        Ok(score.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -121,6 +121,6 @@ impl Day for Day15 {
         }
         let score = scan_path(& mut search_path);
 
-        return Ok(score.to_string());
+        Ok(score.to_string())
     }
 }

@@ -54,11 +54,11 @@ impl SyntaxSection {
         if c == SYNTAX_ANGLED.opening || c == SYNTAX_ANGLED.closing {
             return Ok(SYNTAX_ANGLED);
         }
-        return Err(c);
+        Err(c)
     }
 
     pub fn is_open(c: char) -> bool {
-        return c == SYNTAX_CURVED.opening || c == SYNTAX_SQUARE.opening || c == SYNTAX_CURLY.opening || c == SYNTAX_ANGLED.opening;
+        c == SYNTAX_CURVED.opening || c == SYNTAX_SQUARE.opening || c == SYNTAX_CURLY.opening || c == SYNTAX_ANGLED.opening
     }
 }
 
@@ -99,7 +99,7 @@ fn scan_syntax(syntax: &Vec<char>, index: &mut usize) -> std::result::Result<Syn
         }
     }
 
-    return Ok(SyntaxScan::Inclomplete(vec![expected]));
+    Ok(SyntaxScan::Inclomplete(vec![expected]))
 
 }
 
@@ -110,12 +110,12 @@ impl Day for Day10 {
         for d in data {
             let mut index:usize = 0;
             let r = scan_syntax(&d.items, &mut index).unwrap();
-            match r {
-                SyntaxScan::Corrupt(c) => score += c.corrupt_score,
-                _ => (),
+            
+            if let SyntaxScan::Corrupt(c) = r {
+                score += c.corrupt_score;
             }
         }
-        return Ok(score.to_string());
+        Ok(score.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -125,18 +125,16 @@ impl Day for Day10 {
             let mut score = 0;
             let mut index:usize = 0;
             let r = scan_syntax(&d.items, &mut index).unwrap();
-            match r {
-                SyntaxScan::Inclomplete(v) => {
-                    for s in v {
-                        score *= 5;
-                        score += s.auto_score;
-                    }
-                    scores.push(score);
+
+            if let SyntaxScan::Inclomplete(v) = r {
+                for s in v {
+                    score *= 5;
+                    score += s.auto_score;
                 }
-                _ => (),
+                scores.push(score);
             }
         }
         scores.sort();
-        return Ok(scores[(scores.len()/2)].to_string());
+        Ok(scores[(scores.len()/2)].to_string())
     }
 }

@@ -15,7 +15,7 @@ const UNSET_MAP: usize = 10;
 
 impl LcdInput {
     pub fn new() -> Self {
-        return LcdInput {
+        LcdInput {
             samples: Vec::new(),
             samples_nos: Vec::new(),
             actuals: Vec::new(),
@@ -23,14 +23,14 @@ impl LcdInput {
         }
     }
 
-    pub fn count_after_dedupe(main: &String, test: &String) -> usize {
+    pub fn count_after_dedupe(main: &String, test: &str) -> usize {
         let mut count = main.len();
         for c in main.chars() {
             if test.contains(c) {
                 count -= 1;
             }
         }
-        return count;
+        count
     }
 
     pub fn sample_compare(a: &String, b: &String) -> bool{
@@ -52,7 +52,7 @@ impl LcdInput {
                 return i;
             }
         }
-        return UNSET_MAP;
+        UNSET_MAP
     }
 
     pub fn parse1(&mut self) {
@@ -120,7 +120,7 @@ impl LcdInput {
         (self.actual_nos[0] * 1000) +
         (self.actual_nos[1] * 100) + 
         (self.actual_nos[2] * 10) +
-        (self.actual_nos[3] * 1)
+        self.actual_nos[3]
     }
 
 }
@@ -130,7 +130,7 @@ impl std::str::FromStr for LcdInput {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut lcd = LcdInput::new();
-        let sections:Vec<&str> = s.split("|").collect();
+        let sections:Vec<&str> = s.split('|').collect();
 
         let samples = sections[0].split_whitespace();
         let actuals = sections[1].split_whitespace();
@@ -145,7 +145,7 @@ impl std::str::FromStr for LcdInput {
             lcd.actuals.push(a.to_string());
         }
 
-        return Ok(lcd);
+        Ok(lcd)
     }
 }
 
@@ -166,7 +166,7 @@ impl Day for Day08 {
                 }
             }
         }
-        return Ok(count.to_string());
+        Ok(count.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -183,6 +183,6 @@ impl Day for Day08 {
         for d in data {
             count += d.get_val();
         }
-        return Ok(count.to_string());
+        Ok(count.to_string())
     }
 }

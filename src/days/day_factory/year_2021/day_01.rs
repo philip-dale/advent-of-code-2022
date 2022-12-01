@@ -9,14 +9,14 @@ impl Day for Day01 {
         let data: Vec<u64> = ipr.vec_1d_newln()?;
         let mut last = data[0];
         let mut count = 0;
-        for p in 1..data.len() {
-            if data[p] > last {
+        for p in data{
+            if p > last {
                 count += 1;
             }
-            last = data[p];
+            last = p;
         }
 
-        return Ok(count.to_string());
+        Ok(count.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -30,7 +30,7 @@ impl Day for Day01 {
             }
             last = val;
         }
-        return Ok(count.to_string());
+        Ok(count.to_string())
     }
 }
 

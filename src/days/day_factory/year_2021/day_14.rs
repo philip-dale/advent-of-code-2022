@@ -21,7 +21,7 @@ impl Polymer {
 
             let r = self.instructions.get(k).unwrap();
             let v1 = k[0..1].to_string() + r;
-            let v2 = r.to_string() + &k[1..2].to_string();
+            let v2 = r.to_string() + &k[1..2];
             hash_add_or_update(& mut new, v1, *count);
             hash_add_or_update(& mut new, v2, *count);
         }
@@ -67,7 +67,7 @@ impl Polymer {
         if current_count < min_val {
             min_val = current_count;
         }
-        return max_val - min_val;
+        max_val - min_val
     }
 }
 
@@ -91,7 +91,7 @@ impl std::str::FromStr for Polymer {
                 p.instructions.insert(s[0].trim().to_string(), s[1].trim().to_string());
             }
         }
-        return Ok(p);
+        Ok(p)
     }
 }
 
@@ -101,12 +101,12 @@ impl Day for Day14 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut poly: Polymer = ipr.whole()?;
         poly.steps(10);
-        return Ok(poly.result().to_string());
+        Ok(poly.result().to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut poly: Polymer = ipr.whole()?;
         poly.steps(40);
-        return Ok(poly.result().to_string());
+        Ok(poly.result().to_string())
     }
 }

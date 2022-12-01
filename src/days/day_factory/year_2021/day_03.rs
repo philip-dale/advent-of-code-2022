@@ -8,23 +8,21 @@ pub struct Day03{}
 fn count_bits(data: &Vec<Bits>, start: usize, len: usize) -> Vec<HighLowCounts> {
     let mut counts: Vec<HighLowCounts> = vec![HighLowCounts{low: 0, high: 0}; len];
     for d in data {
-        let mut i: usize = 0;
         for p in start..(start + len) {
             if d.bits[p] == '0' {
-                counts[i].low += 1;
+                counts[p-start].low += 1;
             } else {
-                counts[i].high += 1;
+                counts[p-start].high += 1;
             }
-            i += 1;
         }
     }
-    return counts;
+    counts
 }
 
 fn strip_unwanted(data: &mut Vec<Bits>, is_high: bool) {
     let mut phase: usize = 0;
     while data.len() > 1 {
-        let counts = count_bits(&data, phase, 1);
+        let counts = count_bits(data, phase, 1);
 
         let mut target: char = '0';
         if counts[0].high >= counts[0].low {
@@ -58,13 +56,13 @@ impl Day for Day03 {
             } else {
                 epsilon += 1;
             }
-            gamma = gamma << 1;
-            epsilon = epsilon << 1;
+            gamma <<= 1;
+            epsilon <<= 1;
         }
-        gamma = gamma >> 1;
-        epsilon = epsilon >> 1;
+        gamma >>= 1;
+        epsilon >>= 1;
 
-        return Ok((gamma * epsilon).to_string());
+        Ok((gamma * epsilon).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -77,7 +75,7 @@ impl Day for Day03 {
         strip_unwanted(&mut data2, false);
         let c02 = data2[0].to_uint();
 
-        return Ok((c02 * oxy).to_string());
+        Ok((c02 * oxy).to_string())
     }
 }
 

@@ -6,10 +6,10 @@ pub struct Day13{}
 
 impl Day for Day13 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        return Ok(ipr.fullname()?);
+        Ok(ipr.fullname()?)
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        return Ok(ipr.fullname()?);
+        Ok(ipr.fullname()?)
     }
 }

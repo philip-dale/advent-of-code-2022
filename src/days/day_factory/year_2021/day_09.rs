@@ -14,32 +14,22 @@ impl CharNumGrid {
 
         for (ix, x) in self.cells.iter().enumerate() {
             for (iy, v) in x.iter().enumerate() {
-                if ix != 0 {
-
-                    if self.cells[ix-1][iy] <= *v {
-                        continue;
-                    }
+                if ix != 0 && self.cells[ix-1][iy] <= *v{
+                    continue;
                 }
-                if ix != x_max {
-                    if self.cells[ix+1][iy] <= *v {
-                        continue;
-                    }
+                if ix != x_max && self.cells[ix+1][iy] <= *v{
+                    continue;
                 }
-                if iy != 0 {
-                    if self.cells[ix][iy-1] <= *v {
-                        continue;
-                    }
+                if iy != 0 && self.cells[ix][iy-1] <= *v{
+                    continue;
                 }
-                if iy != y_max {
-                    if self.cells[ix][iy+1] <= *v {
-                        continue;
-                    }
+                if iy != y_max && self.cells[ix][iy+1] <= *v{
+                    continue;
                 }
-                
                 low_points.push((ix, iy));
             }
         }
-        return low_points
+        low_points
     }
  
     pub fn calc_low_risk(&self, lps: &Vec<(usize, usize)>) -> u32 {
@@ -47,7 +37,7 @@ impl CharNumGrid {
         for lp in lps {
             total += self.cells[lp.0][lp.1] + 1;
         }
-        return total;
+        total
     }
 }
 
@@ -74,14 +64,14 @@ fn fill_basin(cells: &Vec<Vec<u32>>, basin_map: &mut Vec<Vec<usize>>, x: usize, 
     if y != y_max {
         count = fill_basin(cells, basin_map, x, y+1, count, id);
     }
-    return count;
+    count
 }
 
 impl Day for Day09 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: CharNumGrid = ipr.whole()?;
         let low_points = data.find_low();
-        return Ok(data.calc_low_risk(&low_points).to_string());
+        Ok(data.calc_low_risk(&low_points).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -103,6 +93,6 @@ impl Day for Day09 {
         let basin_sizes_len = basin_sizes.len();
         let risk = basin_sizes[basin_sizes_len-1] * basin_sizes[basin_sizes_len-2] * basin_sizes[basin_sizes_len-3];
 
-        return Ok(risk.to_string());
+        Ok(risk.to_string())
     }
 }

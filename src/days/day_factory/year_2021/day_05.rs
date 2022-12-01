@@ -18,23 +18,23 @@ fn lines_to_map(lines: &Lines, no_diag: bool) -> Vec<Vec<u64>> {
 
             for _s in 0..l.steps() {
                 v[y][x] += 1;
-                if x < l.e.x {
-                    x += 1;
-                } else if x > l.e.x{
-                    x -= 1;
+                match x {
+                    v if v < l.e.x => x += 1,
+                    v if v > l.e.x => x -= 1,
+                    _ => (),
                 }
 
-                if y < l.e.y {
-                    y += 1;
-                } else if y > l.e.y{
-                    y -= 1;
+                match y {
+                    v if v < l.e.y => y += 1,
+                    v if v > l.e.y => y -= 1,
+                    _ => (),
                 }
             }
 
         }
     }
 
-    return v;
+    v
 }
 
 impl Day for Day05 {
@@ -53,7 +53,7 @@ impl Day for Day05 {
                 }
             }
         }
-        return Ok(count.to_string());
+        Ok(count.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -71,6 +71,6 @@ impl Day for Day05 {
                 }
             }
         }
-        return Ok(count.to_string());
+        Ok(count.to_string())
     }
 }

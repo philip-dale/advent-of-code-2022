@@ -10,9 +10,9 @@ struct Lanterns {
 
 impl Lanterns {
     pub fn new() -> Self {
-        return Lanterns {
+        Lanterns {
             times: vec![0; 9],
-        };
+        }
     }
 
     pub fn from_vec(init: Vec<usize>) -> Self {
@@ -20,7 +20,7 @@ impl Lanterns {
         for v in init {
             l.times[v] += 1;
         }
-        return l;
+        l
     }
 
     pub fn step(&mut self) {
@@ -39,15 +39,15 @@ impl Lanterns {
     }
 
     pub fn sum(&self) -> u64 {
-        return self.times[0] +
-               self.times[1] +
-               self.times[2] +
-               self.times[3] +
-               self.times[4] +
-               self.times[5] +
-               self.times[6] +
-               self.times[7] +
-               self.times[8];
+        self.times[0] +
+        self.times[1] +
+        self.times[2] +
+        self.times[3] +
+        self.times[4] +
+        self.times[5] +
+        self.times[6] +
+        self.times[7] +
+        self.times[8]
     }
 
     pub fn run(&mut self, steps: usize) -> u64 {
@@ -55,7 +55,7 @@ impl Lanterns {
             self.step();
         }
 
-        return self.sum();
+        self.sum()
     }
 }
 
@@ -63,12 +63,12 @@ impl Day for Day06 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut data = Lanterns::from_vec(ipr.vec_1d_sep(&String::from(","))?);
         let total = data.run(80);
-        return Ok(total.to_string());
+        Ok(total.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut data = Lanterns::from_vec(ipr.vec_1d_sep(&String::from(","))?);
         let total = data.run(256);
-        return Ok(total.to_string());
+        Ok(total.to_string())
     }
 }

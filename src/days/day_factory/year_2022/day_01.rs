@@ -3,9 +3,9 @@ use crate::input_reader;
 use crate::days::day_factory::Day;
 
 #[cfg(windows)]
-const GROUP_ENDING: &'static str = "\r\n\r\n";
+const GROUP_ENDING: & str = "\r\n\r\n";
 #[cfg(not(windows))]
-const GROUP_ENDING: &'static str = "\n\n";
+const GROUP_ENDING: & str = "\n\n";
 
 struct Calories {
     total: Vec<u64>,
@@ -20,9 +20,8 @@ impl Calories {
             
             for stored in vals.iter_mut().rev() {
                 if val > *stored {
-                    let tmp = val;
-                    val = *stored;
-                    *stored = tmp;
+
+                    val = std::mem::replace(stored, val)
                 }
             }
         }
@@ -46,7 +45,7 @@ impl std::str::FromStr for Calories {
             
         }
 
-        return Ok(cal);
+        Ok(cal)
     }
 }
 
@@ -56,11 +55,11 @@ pub struct Day01{}
 impl Day for Day01 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: Calories = ipr.whole()?;
-        return Ok(data.total.iter().max().unwrap().to_string());
+        Ok(data.total.iter().max().unwrap().to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: Calories = ipr.whole()?;
-        return Ok(data.top_n(3).to_string());
+        Ok(data.top_n(3).to_string())
     }
 }

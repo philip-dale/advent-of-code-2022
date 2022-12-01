@@ -38,7 +38,7 @@ impl Folding {
             for y in x {
                 print!("{}", y);
             }
-            println!("");
+            println!();
         }
     }
 
@@ -48,10 +48,8 @@ impl Folding {
                 if p.x > line.1 {
                     p.x -= (p.x-line.1)*2;
                 }
-            } else {
-                if p.y > line.1 {
-                    p.y -= (p.y-line.1)*2;
-                }
+            } else if p.y > line.1 {
+                p.y -= (p.y-line.1)*2;
             }
         }
         self.dedupe();
@@ -81,12 +79,12 @@ impl std::str::FromStr for Folding {
 
         let mut instructions = false;
         for l in s.lines() {
-            if l.len() == 0 {
+            if l.is_empty() {
                 instructions = true;
                 continue;
             }
             if instructions {
-                let parts:Vec<&str> = l.split("=").collect();
+                let parts:Vec<&str> = l.split('=').collect();
                 folding.instructions.push((parts[0].chars().last().unwrap(), parts[1].parse()?));
             } else {
                 folding.points.push(l.parse()?)
@@ -94,7 +92,7 @@ impl std::str::FromStr for Folding {
 
         }
 
-        return Ok(folding);
+        Ok(folding)
     }
 }
 
@@ -104,13 +102,13 @@ impl Day for Day13 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut folding:Folding = ipr.whole()?;
         folding.fold(&(folding.instructions[0].0, folding.instructions[0].1));
-        return Ok(folding.points.len().to_string());
+        Ok(folding.points.len().to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut folding:Folding = ipr.whole()?;
         folding.fold_all();
         folding.display();
-        return Ok(folding.points.len().to_string());
+        Ok(folding.points.len().to_string())
     }
 }

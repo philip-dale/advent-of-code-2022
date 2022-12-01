@@ -30,7 +30,7 @@ impl Day for Day02 {
                 pos.horizontal += m.val;
             }
         }
-        return Ok((pos.depth * pos.horizontal).to_string());
+        Ok((pos.depth * pos.horizontal).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -47,7 +47,7 @@ impl Day for Day02 {
                 pos.depth += pos.aim * m.val;
             }
         }
-        return Ok((pos.depth * pos.horizontal).to_string());
+        Ok((pos.depth * pos.horizontal).to_string())
     }
 }
 

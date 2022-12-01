@@ -14,10 +14,10 @@ fn calc_diffs(data: &Vec<usize>, target: usize) -> usize{
             total += target-v;
         };
     }
-    return total;
+    total
 }
 
-fn calc_diffs_lookup(data: &Vec<usize>, target: usize, lookup: &Vec<usize>) -> usize{
+fn calc_diffs_lookup(data: &Vec<usize>, target: usize, lookup: &[usize]) -> usize{
     let mut total = 0;
     for v in data {
         
@@ -29,7 +29,7 @@ fn calc_diffs_lookup(data: &Vec<usize>, target: usize, lookup: &Vec<usize>) -> u
 
         total += lookup[diff];
     }
-    return total;
+    total
 }
 
 impl Day for Day07 {
@@ -37,7 +37,7 @@ impl Day for Day07 {
         let mut data: Vec<usize> = ipr.vec_1d_sep(&String::from(","))?;
         data.sort();
         let target = data[data.len()/2];
-        return Ok(calc_diffs(&data, target).to_string());
+        Ok(calc_diffs(&data, target).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -57,6 +57,6 @@ impl Day for Day07 {
                 min_fuel = fuel;
             }
         }
-        return Ok(min_fuel.to_string());
+        Ok(min_fuel.to_string())
     }
 }

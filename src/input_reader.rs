@@ -15,7 +15,7 @@ impl InputReader {
         for line in br.lines() {
             v.push(line?.trim().parse().expect("Type not found"));
         }
-        return Ok(v);
+        Ok(v)
     }
 
     pub fn vec_1d_sep<T: std::str::FromStr>(&self, sep: &String) -> Result<Vec<T>, Error> where <T as std::str::FromStr>::Err: std::fmt::Debug
@@ -25,16 +25,16 @@ impl InputReader {
         for line in s.split(sep) {
             v.push(line.trim().parse().expect("Type not found"));
         }
-        return Ok(v);
+        Ok(v)
     }
 
     pub fn whole<T: std::str::FromStr>(&self) -> Result<T, Error> where <T as std::str::FromStr>::Err: std::fmt::Debug
     {
-        return Ok(read_to_string(self.fullname()?).unwrap().parse().expect("Error Reading Whole File"));
+        Ok(read_to_string(self.fullname()?).unwrap().parse().expect("Error Reading Whole File"))
     }
 
     pub fn fullname(&self) -> Result<String, Error> {
-        return Ok(canonicalize(self.directory.clone() + "/" + &self.filename[..])?.into_os_string().into_string().unwrap());
+        Ok(canonicalize(self.directory.clone() + "/" + &self.filename[..])?.into_os_string().into_string().unwrap())
     }
 
 }

@@ -8,7 +8,7 @@ impl std::str::FromStr for StrU64 {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let a:Vec<&str> = s.split_whitespace().collect();
-        return Ok( StrU64{
+        Ok( StrU64{
             dir: a[0].to_string(),
             val: a[1].trim().parse()?,    
         })
@@ -26,10 +26,10 @@ impl Bits {
             if *c == '1' {
                 val += 1;
             }
-            val = val << 1;
+            val <<= 1;
         }
-        val = val >> 1;
-        return val;
+        val >>= 1;
+        val
     }
 }
 
@@ -41,7 +41,7 @@ impl std::str::FromStr for Bits {
         for c in s.chars() {
             b.push(c);
         }
-        return Ok(Bits{bits: b});
+        Ok(Bits{bits: b})
     }
 }
 
@@ -68,7 +68,7 @@ impl BingoBoard {
             mv.push(vec![false; lv.len()]);
             bv.push(lv);
         }
-        return Ok(Self { board: bv, marked: mv });
+        Ok(Self { board: bv, marked: mv })
     }
 
     pub fn play(&mut self, n: u64) {
@@ -108,7 +108,7 @@ impl BingoBoard {
                 return true;
             }
         }
-        return false;
+        false
     }
 
     pub fn get_sum(&self, marked: bool) -> u64 {
@@ -120,7 +120,7 @@ impl BingoBoard {
                 }
             }
         }
-        return sum;
+        sum
     }
 }
 
@@ -128,7 +128,7 @@ impl std::str::FromStr for BingoBoard {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        return Ok(BingoBoard::new(s)?);
+        BingoBoard::new(s)
     }
 }
 
@@ -169,7 +169,7 @@ impl Point {
                 n.push(Self{x,y});
             }
         }
-        return n;
+        n
 
     }
     #[allow(dead_code)]
@@ -201,7 +201,7 @@ impl Point {
             }
             n.push(Self{x:self.x, y});
         }
-        return n;
+        n
 
     }
 }
@@ -210,7 +210,7 @@ impl std::str::FromStr for Point {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let vals:Vec<&str> = s.split(",").collect();
+        let vals:Vec<&str> = s.split(',').collect();
         Ok(Point{
             x: vals[0].trim().parse()?,
             y: vals[1].trim().parse()?,
@@ -225,7 +225,7 @@ pub struct LineVector {
 
 impl LineVector {
     pub fn is_diag(&self) -> bool {
-        return !(self.e.x == self.s.x || self.e.y == self.s.y);
+        !(self.e.x == self.s.x || self.e.y == self.s.y)
     }
 
     pub fn steps(&self) -> usize {
@@ -244,7 +244,7 @@ impl LineVector {
         if x_steps > y_steps {
             return x_steps+1;
         }
-        return y_steps+1;
+        y_steps+1
     }
 }
 
@@ -283,7 +283,7 @@ impl Lines {
             }
         }
 
-        return (x_max+1, y_max+1);
+        (x_max+1, y_max+1)
     }
 }
 
@@ -295,7 +295,7 @@ impl std::str::FromStr for CharNumGrid {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        return Ok(CharNumGrid {
+        Ok(CharNumGrid {
             cells: {
                 let mut v: Vec<Vec<u32>> = Vec::new();
                 for l in s.lines() {
@@ -307,7 +307,7 @@ impl std::str::FromStr for CharNumGrid {
                 }
                 v
             },
-        });
+        })
     }
 }
 

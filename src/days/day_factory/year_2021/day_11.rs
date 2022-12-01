@@ -44,7 +44,7 @@ fn fire_cell(octo: & mut OctoEnergy, x: usize, y: usize) -> u32{
         }
         octo.energy[x][y] = 0;
     }
-    return count;
+    count
 }
 
 fn fire_cells(octo: & mut OctoEnergy) -> u32{
@@ -56,7 +56,7 @@ fn fire_cells(octo: & mut OctoEnergy) -> u32{
             }
         }
     }
-    return count
+    count
 }
 
 impl Day for Day11 {
@@ -73,7 +73,7 @@ impl Day for Day11 {
             fired += fire_cells(&mut octo);
         }
         
-        return Ok(fired.to_string());
+        Ok(fired.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -90,6 +90,6 @@ impl Day for Day11 {
             }
         }
         
-        return Ok(String::from("Fail"));
+        Ok(String::from("Fail"))
     }
 }

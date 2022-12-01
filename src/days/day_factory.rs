@@ -23,17 +23,17 @@ pub trait Day {
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>>;
     fn run(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         match ipr.stage.as_str() {
-            "1" => return self.run1(ipr),
-            "2" => return self.run2(ipr),
-            _ => return Ok(String::from("Unknown Stage")),
-        };
+            "1" => self.run1(ipr),
+            "2" => self.run2(ipr),
+            _ => Err(Box::new(DayError("Unknown Stage".into()))),
+        }
     }
 }
 
 pub fn get_day(day: String) -> Result<Box<dyn Day>, Box<dyn Error>> {
     match &day[0..4] {
-        "2021" => return year_2021::get_day(day[4..6].to_string()),
-        "2022" => return year_2022::get_day(day[4..6].to_string()),
-        _ => return Err(Box::new(DayError("Unknown Year".into()))),
+        "2021" => year_2021::get_day(day[4..6].to_string()),
+        "2022" => year_2022::get_day(day[4..6].to_string()),
+        _ => Err(Box::new(DayError("Unknown Year".into()))),
     }
 }

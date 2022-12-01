@@ -18,7 +18,7 @@ impl BingoGame {
                 }
             }
         }
-        return (0,0);
+        (0,0)
     }
 
     pub fn play_till_end(&mut self) -> (usize, usize) {
@@ -41,7 +41,7 @@ impl BingoGame {
                 return (m, last_won);
             }
         }
-        return (0,0);
+        (0,0)
     }
 }
 
@@ -52,7 +52,7 @@ impl std::str::FromStr for BingoGame {
         let sections: Vec<&str> = s.split("\r\n\r\n").collect();
         let first_line: Vec<&str> =  sections[0].split(',').collect();
 
-        return Ok(BingoGame {
+        Ok(BingoGame {
             moves: {
                 let mut v: Vec<u64> = Vec::new();
                 
@@ -63,8 +63,8 @@ impl std::str::FromStr for BingoGame {
             },
             boards: {
                 let mut v: Vec<BingoBoard> = Vec::new();
-                for i in 1..sections.len() {
-                    v.push(sections[i].parse()?)
+                for s in sections {
+                    v.push(s.parse()?)
                 };
                 v
             }
@@ -77,12 +77,12 @@ impl Day for Day04 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut data: BingoGame = ipr.whole()?;
         let (m, b) = data.play();
-        return Ok((data.moves[m] * data.boards[b].get_sum(false)).to_string());
+        Ok((data.moves[m] * data.boards[b].get_sum(false)).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut data: BingoGame = ipr.whole()?;
         let (m, b) = data.play_till_end();
-        return Ok((data.moves[m] * data.boards[b].get_sum(false)).to_string());
+        Ok((data.moves[m] * data.boards[b].get_sum(false)).to_string())
     }
 }
