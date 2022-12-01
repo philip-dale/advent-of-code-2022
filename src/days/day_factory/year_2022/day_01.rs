@@ -3,7 +3,6 @@ use crate::input_reader;
 use crate::days::day_factory::Day;
 
 struct Calories {
-    items: Vec<Vec<u64>>,
     total: Vec<u64>,
 }
 
@@ -31,19 +30,20 @@ impl std::str::FromStr for Calories {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut cal = Calories {
-            items: Vec::new(),
             total: Vec::new(),
         };
+
         let spliter = match s {
             s if s.contains("\r\n\r\n") => "\r\n\r\n",
             _ => "\n\n",
         };
+        
         for g in s.split(spliter).collect::<Vec<&str>>() {
-            cal.items.push(Vec::new());
+            cal.total.push(0);
             for l in g.lines().collect::<Vec<&str>>() {
-                cal.items.last_mut().unwrap().push(l.parse()?);
+                *cal.total.last_mut().unwrap() += l.parse::<u64>()?;
             }
-            cal.total.push(cal.items.last().unwrap().iter().sum());
+            
         }
 
         return Ok(cal);
