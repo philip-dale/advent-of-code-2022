@@ -95,28 +95,20 @@ pub struct Day02{}
 impl Day for Day02 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: Vec<String> = ipr.vec_1d_newln()?;
-        let mut games: Vec<RpsGame> = Vec::new();
-        for l in data {
-            games.push(RpsGame::from_str(&l));
-        }
-
         let mut total = 0;
-        for m in games {
-            total += m.get_score();
+        for l in data {
+            let g = RpsGame::from_str(&l);
+            total += g.get_score();
         }
         Ok(total.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: Vec<String> = ipr.vec_1d_newln()?;
-        let mut games: Vec<RpsGame> = Vec::new();
-        for l in data {
-            games.push(RpsGame::from_str_wld(&l));
-        }
-
         let mut total = 0;
-        for m in games {
-            total += m.get_score();
+        for l in data {
+            let g = RpsGame::from_str_wld(&l);
+            total += g.get_score();
         }
         Ok(total.to_string())
     }
