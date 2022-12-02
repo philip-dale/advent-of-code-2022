@@ -31,23 +31,11 @@ impl RpsMove {
     }
 
     pub fn wld(&self, theirs: &Self) ->u32 {
-        if self == theirs {
-            return 3;
+        match theirs {
+            theirs if theirs == self => 3,
+            theirs if theirs.get_win() == *self => 6,
+            _ => 0,
         }
-
-        if *self == RpsMove::R && *theirs == RpsMove::S {
-            return 6;
-        }
-
-        if *self == RpsMove::P && *theirs == RpsMove::R {
-            return 6;
-        }
-
-        if *self == RpsMove::S && *theirs == RpsMove::P {
-            return 6;
-        }
-
-        0
     }
 
     pub fn get_lose(&self) -> Self{
@@ -85,39 +73,20 @@ impl RpsGame {
     pub fn get_score(&self) -> u32{
         self.mine.wld(&self.theirs) + self.mine.get_score()
     }
-}
 
-impl std::str::FromStr for RpsGame {
-    type Err = std::num::ParseIntError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self{
-            theirs: RpsMove::from_char(s.chars().nth(0).unwrap()),
+    fn from_str(s: &str) -> Self {
+        Self{
+            theirs: RpsMove::from_char(s.chars().next().unwrap()),
             mine: RpsMove::from_char(s.chars().last().unwrap()),
-        })
+        }
     }
-}
 
-pub struct  RpsGame2 {
-    pub theirs: RpsMove,
-    pub mine: RpsMove,
-}
-
-impl RpsGame2 {
-    pub fn get_score(&self) -> u32{
-        self.mine.wld(&self.theirs) + self.mine.get_score()
-    }
-}
-
-impl std::str::FromStr for RpsGame2 {
-    type Err = std::char::ParseCharError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let theirs = RpsMove::from_char(s.chars().nth(0).unwrap());
-        Ok(Self{
+    fn from_str_wld(s: &str) -> Self {
+        let theirs = RpsMove::from_char(s.chars().next().unwrap());
+        Self{
             theirs,
             mine: RpsMove::from_wld(&theirs, s.chars().last().unwrap()),
-        })
+        }
     }
 }
 
@@ -125,7 +94,12 @@ pub struct Day02{}
 
 impl Day for Day02 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let games: Vec<RpsGame> = ipr.vec_1d_newln()?;
+        let data: Vec<String> = ipr.vec_1d_newln()?;
+        let mut games: Vec<RpsGame> = Vec::new();
+        for l in data {
+            games.push(RpsGame::from_str(&l));
+        }
+
         let mut total = 0;
         for m in games {
             total += m.get_score();
@@ -134,7 +108,12 @@ impl Day for Day02 {
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let games: Vec<RpsGame2> = ipr.vec_1d_newln()?;
+        let data: Vec<String> = ipr.vec_1d_newln()?;
+        let mut games: Vec<RpsGame> = Vec::new();
+        for l in data {
+            games.push(RpsGame::from_str_wld(&l));
+        }
+
         let mut total = 0;
         for m in games {
             total += m.get_score();
