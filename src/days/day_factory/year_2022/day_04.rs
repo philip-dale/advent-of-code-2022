@@ -11,6 +11,17 @@ impl DashRange {
     pub fn len(&self) -> usize {
         self.end - self.start
     }
+
+    pub fn contains(&self, c: &Self) -> bool {
+        c.start >= self.start && c.end <= self.end
+    }
+
+    pub fn overlaps(&self, c: &Self) -> bool {
+        if self.start >= c.start && self.start <= c.end {
+            return true;
+        }
+        self.end >= c.start && self.end <= c.end
+    }
 }
 
 impl std::str::FromStr for DashRange {
@@ -33,14 +44,11 @@ struct DashRangePair {
 
 impl DashRangePair {
     pub fn contained(&self) -> bool {
-        self.short.start >= self.long.start && self.short.end <= self.long.end
+        self.long.contains(&self.short)
     }
 
     pub fn overlaps(&self) -> bool {
-        if self.short.start >= self.long.start && self.short.start <= self.long.end {
-            return true
-        }
-        self.short.end >= self.long.start && self.short.end <= self.long.end
+        self.short.overlaps(&self.long)
     }
 }
 
@@ -64,7 +72,6 @@ impl std::str::FromStr for DashRangePair {
         }
     }
 }
-
 
 pub struct Day04{}
 
