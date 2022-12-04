@@ -12,13 +12,13 @@ fn find_matches_2(v1: &Vec<char>, v2: &Vec<char>) -> Vec<char> {
     matches
 }
 
-fn find_match_3(v1: &Vec<char>, v2: &Vec<char>, v3: &Vec<char>) -> char {
+fn find_match_3(v1: &Vec<char>, v2: &Vec<char>, v3: &Vec<char>) -> Option<char> {
     for c1 in v1 {
         if v2.contains(c1) && v3.contains(c1){
-            return *c1;
+            return Some(*c1);
         }
     }
-    ' '
+    None
 }
 
 struct BackPack {
@@ -54,7 +54,7 @@ impl BackPack {
     }
 
     pub fn find_match_3_score(&self, v2: &Self, v3: &Self) -> u32 {
-        Self::calc_score(find_match_3(&self.get_all(), &v2.get_all(), &v3.get_all()))
+        Self::calc_score(find_match_3(&self.get_all(), &v2.get_all(), &v3.get_all()).unwrap())
     }
 
 }
