@@ -5,17 +5,20 @@ use crate::days::day_factory::Day;
 fn find_matches_2(v1: &Vec<char>, v2: &Vec<char>) -> Vec<char> {
     let mut matches: Vec<char> = Vec::new();
     for c1 in v1 {
-        for c2 in v2 {
-            if c1 == c2 && !matches.contains(c1){
-                matches.push(*c1);
-            }
+        if v2.contains(c1) && !matches.contains(c1) {
+            matches.push(*c1);
         }
     }
     matches
 }
 
 fn find_match_3(v1: &Vec<char>, v2: &Vec<char>, v3: &Vec<char>) -> char {
-    find_matches_2(&find_matches_2(v1, v2),v3)[0]
+    for c1 in v1 {
+        if v2.contains(c1) && v3.contains(c1){
+            return *c1;
+        }
+    }
+    ' '
 }
 
 struct BackPack {
