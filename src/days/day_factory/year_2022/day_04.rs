@@ -35,6 +35,13 @@ impl DashRangePair {
     pub fn contained(&self) -> bool {
         self.short.start >= self.long.start && self.short.end <= self.long.end
     }
+
+    pub fn overlaps(&self) -> bool {
+        if self.short.start >= self.long.start && self.short.start <= self.long.end {
+            return true
+        }
+        self.short.end >= self.long.start && self.short.end <= self.long.end
+    }
 }
 
 impl std::str::FromStr for DashRangePair {
@@ -75,6 +82,14 @@ impl Day for Day04 {
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        Ok(ipr.fullname()?)
+        let data : Vec<DashRangePair> = ipr.vec_1d_newln()?;
+        let mut total:u32 = 0;
+        for p in data {
+            if p.overlaps() {
+                total += 1;
+            }
+        }
+
+        Ok(total.to_string())
     }
 }
