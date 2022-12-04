@@ -1,1 +1,1 @@
-cargo run -- -y 2022 -d 03 -i A -s 2
+cargo run -- -y 2022 -d 04 -i A -s 1
