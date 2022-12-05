@@ -3,11 +3,8 @@ use std::error::Error;
 
 use crate::input_reader;
 use crate::days::day_factory::Day;
+use crate::days::day_factory::types::DOUBLE_NEW_LINE;
 
-#[cfg(windows)]
-const GROUP_ENDING: & str = "\r\n\r\n";
-#[cfg(not(windows))]
-const GROUP_ENDING: & str = "\n\n";
 struct CrateMoves {
     count: usize,
     source: usize,
@@ -37,7 +34,7 @@ impl std::str::FromStr for CrateUnload {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let sections: Vec<&str> = s.split(GROUP_ENDING).collect();
+        let sections: Vec<&str> = s.split(DOUBLE_NEW_LINE).collect();
 
         let mut crate_unload= Self{
             stacks: Vec::new(),

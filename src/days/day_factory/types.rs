@@ -1,3 +1,8 @@
+#[cfg(windows)]
+pub const DOUBLE_NEW_LINE: & str = "\r\n\r\n";
+#[cfg(not(windows))]
+pub const DOUBLE_NEW_LINE: & str = "\n\n";
+
 pub struct StrU64{
     pub dir: String,
     pub val: u64,
