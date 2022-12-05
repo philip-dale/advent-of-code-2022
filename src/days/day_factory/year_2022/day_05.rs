@@ -42,8 +42,9 @@ impl std::str::FromStr for CrateUnload {
         };
 
         let mut processed_header = false;
+        let re = Regex::new(r".(.)..?").unwrap();
+        
         for l in sections[0].lines().rev() {
-            let re = Regex::new(r".(.)..?").unwrap();
             let line_caps = re.captures_iter(l);
 
             if !processed_header {
