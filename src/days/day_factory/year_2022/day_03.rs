@@ -2,7 +2,7 @@ use std::error::Error;
 use crate::input_reader;
 use crate::days::day_factory::Day;
 
-fn find_matches_2(v1: &Vec<char>, v2: &Vec<char>) -> Vec<char> {
+fn find_matches_2(v1: &Vec<char>, v2: &[char]) -> Vec<char> {
     let mut matches: Vec<char> = Vec::new();
     for c1 in v1 {
         if v2.contains(c1) && !matches.contains(c1) {
@@ -12,7 +12,7 @@ fn find_matches_2(v1: &Vec<char>, v2: &Vec<char>) -> Vec<char> {
     matches
 }
 
-fn find_match_3(v1: &Vec<char>, v2: &Vec<char>, v3: &Vec<char>) -> Option<char> {
+fn find_match_3(v1: &Vec<char>, v2: &[char], v3: &[char]) -> Option<char> {
     for c1 in v1 {
         if v2.contains(c1) && v3.contains(c1){
             return Some(*c1);
