@@ -29,7 +29,7 @@ impl std::str::FromStr for CrateMoves {
 }
 
 struct CrateUnload {
-    stacks: Vec<Vec<char>>,
+    stacks: Vec<Vec<String>>,
     moves: Vec<CrateMoves>,
 }
 
@@ -44,20 +44,22 @@ impl std::str::FromStr for CrateUnload {
             moves: Vec::new(),
         };
 
-        // Not so happy with this but it works!
         let mut processed_header = false;
         for l in sections[0].lines().rev() {
-            let stack_count = (l.len()/4) + 1;
+            let re = Regex::new(r".(.)..?").unwrap();
+            let line_caps = re.captures_iter(l);
+
             if !processed_header {
                 processed_header = true;
+                let stack_count = line_caps.count();
                 crate_unload.stacks = vec![Vec::new(); stack_count];
                 continue;
             }
 
-            for i in 0..stack_count {
-                let val = l.chars().nth((i*4)+1).unwrap();
-                if val != ' ' {
-                    crate_unload.stacks[i].push(val);
+            for (i, caps) in  line_caps.enumerate(){
+                let val = caps.get(1).unwrap().as_str();
+                if val != " " {
+                    crate_unload.stacks[i].push(val.to_string());
                 }
             }
         }
@@ -77,12 +79,12 @@ impl CrateUnload {
         for m in moves {
             for i in 0..m.count {
                 if !in_order {
-                    let val = *self.stacks[m.source-1].last().unwrap();
+                    let val = self.stacks[m.source-1].last().unwrap().to_string();
                     self.stacks[m.dest-1].push(val);
                     self.stacks[m.source-1].pop();
                 } else {
                     let index = self.stacks[m.source-1].len() + i - m.count ;
-                    let val = self.stacks[m.source-1][index];
+                    let val = self.stacks[m.source-1][index].to_string();
                     self.stacks[m.dest-1].push(val);
                     self.stacks[m.source-1].remove(index);
                 }
@@ -94,7 +96,7 @@ impl CrateUnload {
         let mut res = String::from("");
         for (i, s) in self.stacks.iter().enumerate() {
             match s.last() {
-                Some(v) => res.push(*v),
+                Some(v) => res += v,
                 _ => println!("Empty Stack = {}", i)
             }
         }
