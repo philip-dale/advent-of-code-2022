@@ -17,7 +17,7 @@ fn check_n(ch: &[char], n:usize) -> bool {
     true
 }
  
-fn get_start(s: &String, n:usize) -> usize{
+fn get_start(s: &str, n:usize) -> usize{
     let ch: Vec<char> = s.chars().collect();
     for i in 0..ch.len()-n {
         if check_n(&ch[i..], n) {
