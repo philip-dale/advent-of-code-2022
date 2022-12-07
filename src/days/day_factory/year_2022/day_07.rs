@@ -137,7 +137,6 @@ impl std::str::FromStr for DirStructure {
                 _ => {dir_structure.add_file(l.parse()?, &path);},
             }
         }
-        // dir_structure.update_size();
         Ok(dir_structure)
     }   
 }
