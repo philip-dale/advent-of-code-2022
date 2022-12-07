@@ -46,11 +46,11 @@ impl DirStructure {
     pub fn add_dir(& mut self, d: &str, path: &[String])  -> bool{
 
         if path.len() == 1 && *path.last().unwrap() == self.name {
-            for ds in 0..self.dirs.len() {
-                if self.dirs[ds].name == d {
-                    return true
-                }
-            }
+            // for ds in 0..self.dirs.len() {
+            //     if self.dirs[ds].name == d {
+            //         return true
+            //     }
+            // }
             self.dirs.push(DirStructure{
                 name: d.to_string(),
                 files: Vec::new(),
@@ -164,14 +164,12 @@ impl std::str::FromStr for DirStructure {
 impl Day for Day07 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: DirStructure = ipr.whole()?;
-        data.print(0);
         Ok(data.get_dir_size_sum(100000).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data: DirStructure = ipr.whole()?;
-        let remaining = 70000000 - data.size;
-        let del_needed = 30000000 - remaining;
+        let del_needed = 30000000 - (70000000 - data.size);
         Ok(data.get_closest_to(del_needed).to_string())
     }
 }
