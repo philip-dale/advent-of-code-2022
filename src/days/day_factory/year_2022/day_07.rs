@@ -29,28 +29,23 @@ pub struct DirStructure {
 }
 
 impl DirStructure {
-    pub fn add_file(& mut self, f: &str, path: &[String]) -> bool{
+    pub fn add_file(& mut self, f: FileInfo, path: &[String]) -> bool{
+        self.size += f.size;
         if path.len() == 1 && *path.last().unwrap() == self.name {
-            self.files.push(f.parse().unwrap());
+            self.files.push(f);
             return true
-        } else {
-            for ds in 0..self.dirs.len() {
-                if self.dirs[ds].name == path[1] {
-                    self.dirs[ds].add_file(f, &path[1..]);
-                    return true;
-                }
+        }
+        for ds in 0..self.dirs.len() {
+            if self.dirs[ds].name == path[1] {
+                self.dirs[ds].add_file(f, &path[1..]);
+                return true;
             }
         }
         false
     }
-    pub fn add_dir(& mut self, d: &str, path: &[String])  -> bool{
 
+    pub fn add_dir(& mut self, d: &str, path: &[String])  -> bool{
         if path.len() == 1 && *path.last().unwrap() == self.name {
-            // for ds in 0..self.dirs.len() {
-            //     if self.dirs[ds].name == d {
-            //         return true
-            //     }
-            // }
             self.dirs.push(DirStructure{
                 name: d.to_string(),
                 files: Vec::new(),
@@ -58,37 +53,24 @@ impl DirStructure {
                 size: 0,
             });
             return true
-        } else {
-            for ds in 0..self.dirs.len() {
-                if self.dirs[ds].name == path[1] {
-                    self.dirs[ds].add_dir(d, &path[1..]);
-                    return true;
-                }
+        } 
+        for ds in 0..self.dirs.len() {
+            if self.dirs[ds].name == path[1] {
+                self.dirs[ds].add_dir(d, &path[1..]);
+                return true;
             }
         }
         false
-    }
-    pub fn update_size(& mut self) {
-        self.size = 0;
-        for ds in 0..self.dirs.len() {
-            self.dirs[ds].update_size();
-            self.size += self.dirs[ds].size;
-        }
-        for f in &self.files {
-            self.size += f.size;
-        }
     }
 
     pub fn get_dir_size_sum(&self, max: usize) -> usize{
         let mut sum = 0;
         for d in &self.dirs {
             if d.size <= max {
-                println!("{0} - {1}", d.name, d.size);
                 sum += d.size;
             }
             sum += d.get_dir_size_sum(max);
         }
-
         sum
     }
 
@@ -103,7 +85,6 @@ impl DirStructure {
                 found = sub_found;
             }
         }
-
         found
     }
 
@@ -153,10 +134,10 @@ impl std::str::FromStr for DirStructure {
                     let ls : Vec<&str> = l.split_whitespace().collect();
                     dir_structure.add_dir(ls[1], &path);
                 },
-                _ => {dir_structure.add_file(l, &path);},
+                _ => {dir_structure.add_file(l.parse()?, &path);},
             }
         }
-        dir_structure.update_size();
+        // dir_structure.update_size();
         Ok(dir_structure)
     }   
 }
