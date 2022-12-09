@@ -80,7 +80,6 @@ impl Day for Day09 {
         let data: Vec<Instruction> = ipr.vec_1d_newln()?;
 
         let mut rope = Rope::new(2);
-        rope.visited.insert((0,0), 0);
 
         for i in data {
             rope.apply_instruction(&i);
@@ -93,7 +92,6 @@ impl Day for Day09 {
         let data: Vec<Instruction> = ipr.vec_1d_newln()?;
 
         let mut rope = Rope::new(10);
-        rope.visited.insert((0,0), 0);
 
         for i in data {
             rope.apply_instruction(&i);
