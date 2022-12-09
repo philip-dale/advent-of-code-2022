@@ -43,6 +43,7 @@ impl Rope {
             }
             
             self.visited.entry(*self.knots.last().unwrap()).and_modify(|c| *c += 1).or_insert(0);
+            //println!("****");
         }
     }
 
@@ -51,8 +52,22 @@ impl Rope {
         let y_delta = self.knots[i-1].1 - self.knots[i].1;
 
         if x_delta.abs() > 1 || y_delta.abs() > 1 {
-            //println!("{0} dx = {1}, dy = {2}", i, x_delta, y_delta);
-            if x_delta.abs() > y_delta.abs() {
+            //println!("{0}: {1},{2} - {3},{4} : dx = {5}, dy = {6}", i, self.knots[i-1].0, self.knots[i-1].1, self.knots[i].0, self.knots[i].1, x_delta, y_delta);
+            if x_delta.abs() == 2 && y_delta.abs() == 2{
+                if x_delta > 0 {
+                    self.knots[i].0 = self.knots[i-1].0-1;
+                } else {
+                    self.knots[i].0 = self.knots[i-1].0+1;
+                }
+
+                if y_delta > 0 {
+                    self.knots[i].1 = self.knots[i-1].1-1;
+                } else {
+                    self.knots[i].1 = self.knots[i-1].1+1;
+                }
+                //self.knots[i].0 += x_delta/2;
+                //self.knots[i].1 += y_delta/2;
+            } else if x_delta.abs() > y_delta.abs() {
                 //self.knots[i].0 += x_delta;
                 if x_delta > 0 {
                     self.knots[i].0 = self.knots[i-1].0-1;
@@ -69,8 +84,9 @@ impl Rope {
                 }
                 self.knots[i].0 = self.knots[i-1].0;
             }
+            //println!("{0},{1} : {2},{3}", self.knots[i-1].0, self.knots[i-1].1, self.knots[i].0, self.knots[i].1);
         }
-        // println!("h = {0},{1} - t = {2},{3}", self.knots[0].0, self.knots[0].1, self.knots[1].0, self.knots[1].1);
+        //println!("h = {0},{1} - t = {2},{3}", self.knots[0].0, self.knots[0].1, self.knots[1].0, self.knots[1].1);
     }
 }
 
@@ -82,8 +98,8 @@ impl Day for Day09 {
 
         let mut rope = Rope::new(2);
 
-        for i in data {
-            rope.apply_instruction(&i);
+        for i in &data {
+            rope.apply_instruction(i);
         }
 
         Ok(rope.visited.len().to_string())
@@ -94,8 +110,8 @@ impl Day for Day09 {
 
         let mut rope = Rope::new(10);
 
-        for i in data {
-            rope.apply_instruction(&i);
+        for i in &data {
+            rope.apply_instruction(i);
             //for k in &rope.knots {
                 //println!("{0},{1}", k.0, k.1);
             //}
