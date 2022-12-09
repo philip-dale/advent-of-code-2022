@@ -51,20 +51,21 @@ impl Rope {
         let y_delta = self.knots[i-1].1 - self.knots[i].1;
 
         if x_delta.abs() > 1 || y_delta.abs() > 1 {
+            //println!("{0} dx = {1}, dy = {2}", i, x_delta, y_delta);
             if x_delta.abs() > y_delta.abs() {
-                self.knots[i].0 += x_delta;
+                //self.knots[i].0 += x_delta;
                 if x_delta > 0 {
-                    self.knots[i].0 -= 1;
+                    self.knots[i].0 = self.knots[i-1].0-1;
                 } else {
-                    self.knots[i].0 += 1;
+                    self.knots[i].0 = self.knots[i-1].0+1;
                 }
                 self.knots[i].1 = self.knots[i-1].1;
             } else {
-                self.knots[i].1 += y_delta;
+                //self.knots[i].1 += y_delta;
                 if y_delta > 0 {
-                    self.knots[i].1 -= 1;
+                    self.knots[i].1 = self.knots[i-1].1-1;
                 } else {
-                    self.knots[i].1 += 1;
+                    self.knots[i].1 = self.knots[i-1].1+1;
                 }
                 self.knots[i].0 = self.knots[i-1].0;
             }
@@ -95,8 +96,14 @@ impl Day for Day09 {
 
         for i in data {
             rope.apply_instruction(&i);
+            //for k in &rope.knots {
+                //println!("{0},{1}", k.0, k.1);
+            //}
+            //println!("___");
         }
-
+        //for k in rope.visited.keys() {
+        //    println!("{0},{1}",k.0, k.1);
+        //}
         Ok(rope.visited.len().to_string())
     }
 }
