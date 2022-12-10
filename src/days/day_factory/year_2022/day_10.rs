@@ -55,8 +55,8 @@ impl RegState {
         let per_row = 40;
         for r in 0..6 {
             for i in 0..per_row {
-                let val = self.history[(r * per_row)  + i];
-                if i as i64 >= val -1 && i as i64 <= val + 1{
+                let val = self.history[(r * per_row) + i];
+                if i as i64 >= val - 1 && i as i64 <= val + 1{
                     print!("#");
                 } else {
                     print!(".");
