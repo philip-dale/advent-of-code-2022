@@ -33,16 +33,11 @@ impl RegState {
         }
     }
 
-    pub fn apply_instruction(& mut self, instruction: &Instruction, mode: char) {
+    pub fn apply_instruction(& mut self, instruction: &Instruction) {
         self.history.push(self.x);
         if instruction.op == "addx" {
-            if mode == 'd' {
-                self.history.push(self.x);
-                self.x += instruction.val;
-            } else {
-                self.x += instruction.val;
-                self.history.push(self.x);
-            }
+            self.history.push(self.x);
+            self.x += instruction.val;
         }
     }
 
@@ -59,25 +54,15 @@ impl RegState {
     pub fn print(&self) {
         let per_row = 40;
         for r in 0..6 {
-            let mut ds = String::from_iter(vec!['.'; per_row]);
             for i in 0..per_row {
-                let mut sprite = String::from_iter(vec!['.'; per_row]);
                 let val = self.history[(r * per_row)  + i];
-                let r = match val {
-                    -1 => (0..1, String::from("#")),
-                    0 => (0..2, String::from("##")),
-                    39 => (38..40, String::from("##")),
-                    40 => (39..40, String::from("#")),
-                    v  if v < 0 => (0..0, String::from("")),
-                    v if v > 40 => (0..0, String::from("")),
-                    v => (v as usize -1..v as usize +2, String::from("###")),
-                };
-                sprite.replace_range(r.0, &r.1);
-                //println!("{}", sprite);
-                ds.replace_range(i..i+1, &sprite[i..i+1]);
-                
+                if i as i64 >= val -1 && i as i64 <= val + 1{
+                    print!("#");
+                } else {
+                    print!(".");
+                }
             }
-            println!("{}", ds);
+            println!();
         }
     }
 }
@@ -89,9 +74,8 @@ impl Day for Day10 {
         let data : Vec<Instruction> = ipr.vec_1d_newln()?;
         let mut cpu = RegState::new();
         for i in data {
-            cpu.apply_instruction(&i, 'd');
+            cpu.apply_instruction(&i);
         }
-
         Ok(cpu.get_score().to_string())
     }
     
@@ -99,7 +83,7 @@ impl Day for Day10 {
         let data: Vec<Instruction> = ipr.vec_1d_newln()?;
         let mut cpu = RegState::new();
         for i in data {
-            cpu.apply_instruction(&i, 'd')
+            cpu.apply_instruction(&i)
         }
         cpu.print();
         Ok(String::from("done"))
