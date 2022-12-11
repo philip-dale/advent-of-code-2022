@@ -54,7 +54,7 @@ impl std::str::FromStr for Monkey {
     }
 }
 
-fn process_monkeys(monkeys:& mut Vec<Monkey>, div: u64) {
+fn process_monkeys(monkeys:& mut [Monkey], div: u64, scale: u64) {
     for m in 0..monkeys.len() {
         while !monkeys[m].items.is_empty() {
             let mut val = monkeys[m].items.remove(0);
@@ -63,8 +63,13 @@ fn process_monkeys(monkeys:& mut Vec<Monkey>, div: u64) {
                 Operation::Mult(v) => val *= v,
                 Operation::Square => val *= val,
             }
-            val /= div;
-            //val = val.floor();
+            
+            if div == 0 {
+                val %= scale;
+            } else {
+                val /= div;
+            }
+            
             let pos = if val % monkeys[m].test == 0{
                 monkeys[m].if_true
             } else {
@@ -76,7 +81,7 @@ fn process_monkeys(monkeys:& mut Vec<Monkey>, div: u64) {
     }
 }
 
-fn get_score (monkeys: & Vec<Monkey>) -> u64{
+fn get_score (monkeys: &[Monkey]) -> u64{
     let mut first =0;
     let mut second = 0;
     for m in monkeys {
@@ -92,31 +97,39 @@ fn get_score (monkeys: & Vec<Monkey>) -> u64{
     first * second
 }
 
+fn get_scale(monkeys: &[Monkey]) -> u64 {
+    let mut val = 1;
+    for m in monkeys {
+        val *= m.test;
+    }
+    val
+}
+
+fn print_monkeys(monkeys: &[Monkey]) {
+    for m in monkeys {
+        println!("{:?}", m);
+    }
+}
+
 pub struct Day11{}
 
 impl Day for Day11 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut data:Vec<Monkey> = ipr.vec_1d_sep(&DOUBLE_NEW_LINE.to_string())?;
-        //for m in &data {
-        //    println!("{:?}", m);
-        //}
         for _l in 0..20 {
-            process_monkeys(&mut data, 3);
+            process_monkeys(&mut data, 3, 0);
         }
-        for m in &data {
-            println!("{:?}", m);
-        }
+        print_monkeys(&data);
         Ok(get_score(&data).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut data : Vec<Monkey> = ipr.vec_1d_sep(&DOUBLE_NEW_LINE.to_string())?;
-        for _l in 0..1 {
-            process_monkeys(&mut data, 1);
+        let scale = get_scale(&data);
+        for _l in 0..10000 {
+            process_monkeys(&mut data, 0, scale);
         }
-        for m in &data {
-            println!("{:?}", m);
-        }
+        print_monkeys(&data);
         Ok(get_score(&data).to_string())
     }
 }
