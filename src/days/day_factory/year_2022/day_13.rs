@@ -1,42 +1,51 @@
-use std::error::Error;
-use std::cmp::Ordering;
-use crate::input_reader;
-use crate::days::day_factory::Day;
 use crate::days::day_factory::types::DOUBLE_NEW_LINE;
+use crate::days::day_factory::Day;
+use crate::input_reader;
+use std::cmp::Ordering;
+use std::error::Error;
 
 use serde_json;
 
 trait MsgComp {
     fn compare(&self, r: &Self) -> Ordering;
+    fn to_array(&self) -> Self;
 }
 
 impl MsgComp for serde_json::Value {
+    fn to_array(&self) -> Self {
+        Self::Array(vec![Self::from(self.as_u64().unwrap())])
+    }
+
     fn compare(&self, r: &Self) -> Ordering {
         if self.is_number() && r.is_number() {
             return self.as_u64().unwrap().cmp(&r.as_u64().unwrap());
         }
-    
+
         if !self.is_number() && !r.is_number() {
             let mut l_pos = 0;
             let mut r_pos = 0;
             while l_pos < self.as_array().unwrap().len() && r_pos < r.as_array().unwrap().len() {
                 let dif = self.as_array().unwrap()[l_pos].compare(&r.as_array().unwrap()[r_pos]);
-                if dif.is_ne(){
+                if dif.is_ne() {
                     return dif;
                 }
                 l_pos += 1;
                 r_pos += 1;
             }
-            return self.as_array().unwrap().len().cmp(&r.as_array().unwrap().len());
+            return self
+                .as_array()
+                .unwrap()
+                .len()
+                .cmp(&r.as_array().unwrap().len());
         }
-    
+
         if self.is_number() {
-            let v = serde_json::Value::Array(vec![serde_json::Value::from(self.as_u64().unwrap())]);
+            let v = self.to_array();
             return v.compare(r);
         }
-    
-        let v = serde_json::Value::Array(vec![serde_json::Value::from(r.as_u64().unwrap())]);
-        self.compare(&v)        
+
+        let v = r.to_array();
+        self.compare(&v)
     }
 }
 
@@ -49,7 +58,7 @@ impl std::str::FromStr for CodeVec {
     type Err = serde_json::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(CodeVec { 
+        Ok(CodeVec {
             v: {
                 let mut v = Vec::new();
                 for l in s.lines().collect::<Vec<&str>>() {
@@ -58,11 +67,11 @@ impl std::str::FromStr for CodeVec {
                     }
                 }
                 v
-            }
+            },
         })
     }
 }
-pub struct Day13{}
+pub struct Day13 {}
 
 impl Day for Day13 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
@@ -76,7 +85,7 @@ impl Day for Day13 {
         }
         Ok(val.to_string())
     }
-    
+
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut codes: CodeVec = ipr.whole()?;
         let v2: serde_json::Value = "[[2]]".parse()?;
@@ -90,6 +99,6 @@ impl Day for Day13 {
         let pos2 = codes.v.iter().position(|a| a.compare(&v2).is_eq()).unwrap() + 1;
         let pos6 = codes.v.iter().position(|a| a.compare(&v6).is_eq()).unwrap() + 1;
 
-        Ok((pos2*pos6).to_string())
+        Ok((pos2 * pos6).to_string())
     }
 }
