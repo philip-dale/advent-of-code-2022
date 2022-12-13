@@ -17,35 +17,36 @@ impl MsgComp for serde_json::Value {
     }
 
     fn compare(&self, r: &Self) -> Ordering {
-        if self.is_number() && r.is_number() {
-            return self.as_u64().unwrap().cmp(&r.as_u64().unwrap());
-        }
-
-        if !self.is_number() && !r.is_number() {
-            let mut l_pos = 0;
-            let mut r_pos = 0;
-            while l_pos < self.as_array().unwrap().len() && r_pos < r.as_array().unwrap().len() {
-                let dif = self.as_array().unwrap()[l_pos].compare(&r.as_array().unwrap()[r_pos]);
-                if dif.is_ne() {
-                    return dif;
-                }
-                l_pos += 1;
-                r_pos += 1;
-            }
-            return self
-                .as_array()
-                .unwrap()
-                .len()
-                .cmp(&r.as_array().unwrap().len());
-        }
-
         if self.is_number() {
+            if r.is_number() {
+                return self.as_u64().unwrap().cmp(&r.as_u64().unwrap());
+            }
             let v = self.to_array();
             return v.compare(r);
         }
 
-        let v = r.to_array();
-        self.compare(&v)
+        if r.is_number() {
+            let v = r.to_array();
+            return self.compare(&v);
+        }
+
+        // else we ahve two arrays
+        let mut l_pos = 0;
+        let mut r_pos = 0;
+        while l_pos < self.as_array().unwrap().len() && r_pos < r.as_array().unwrap().len() {
+            let dif = self.as_array().unwrap()[l_pos].compare(&r.as_array().unwrap()[r_pos]);
+            if dif.is_ne() {
+                return dif;
+            }
+            l_pos += 1;
+            r_pos += 1;
+        }
+        self
+            .as_array()
+            .unwrap()
+            .len()
+            .cmp(&r.as_array().unwrap().len())
+
     }
 }
 
