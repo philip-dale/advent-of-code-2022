@@ -53,9 +53,7 @@ impl CodeMap {
                 l_pos += 1;
                 r_pos += 1;
             }
-    
             return self.get_vec().unwrap().len().cmp(&r.get_vec().unwrap().len());
-            
         }
     
         if self.is_val() {
@@ -68,7 +66,7 @@ impl CodeMap {
 
     }
 
-    fn parse_array(s: &[char]) -> CodeMap {
+    fn parse_string(s: &[char]) -> CodeMap {
         let mut v: Vec<CodeMap> = Vec::new();
         if s.is_empty() {
             return CodeMap::Array(v);
@@ -88,7 +86,7 @@ impl CodeMap {
                         _ => (),
                     }
                 }
-                v.push(CodeMap::parse_array(&s[pos+1..array_end_index]));
+                v.push(CodeMap::parse_string(&s[pos+1..array_end_index]));
                 pos = array_end_index + 1;
             } else if s[pos] == ',' {
                 pos += 1;
@@ -112,38 +110,9 @@ impl std::str::FromStr for CodeMap {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let chars: Vec<char> = s.chars().collect();
-        Ok(CodeMap::parse_array(&chars[1..chars.len()-1]))
+        Ok(CodeMap::parse_string(&chars[1..chars.len()-1]))
     }
 }
-
-
-
-#[derive(Debug)]
-struct CodePair {
-    l: CodeMap,
-    r: CodeMap,
-    swap: bool,
-}
-
-impl std::str::FromStr for CodePair {
-    type Err = std::num::ParseIntError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let sp: Vec<&str> = s.lines().collect();
-        let mut val = Self{
-            l: sp[0].parse()?,
-            r: sp[1].parse()?,
-            swap: false,
-        };
-
-        if val.l.compare(&val.r).is_gt() {
-            val.swap = true;
-        }
-
-        Ok(val)
-    }
-}
-
 struct CodeVec {
     v: Vec<CodeMap>,
 }
@@ -152,28 +121,28 @@ impl std::str::FromStr for CodeVec {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut val = CodeVec {
-            v: Vec::new(),
-        };
-
-        let sp: Vec<&str> = s.lines().collect();
-        for l in sp {
-            if !l.is_empty() {
-                val.v.push(l.parse()?);
+        Ok(CodeVec { 
+            v: {
+                let mut v = Vec::new();
+                for l in s.lines().collect::<Vec<&str>>() {
+                    if !l.is_empty() {
+                        v.push(l.parse()?);
+                    }
+                }
+                v
             }
-        }
-        
-        Ok(val)
+        })
     }
 }
 pub struct Day13{}
 
 impl Day for Day13 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        let code_pairs: Vec<CodePair> = ipr.vec_1d_sep(&DOUBLE_NEW_LINE.to_string())?;
         let mut val = 0;
+        let code_pairs: Vec<String> = ipr.vec_1d_sep(&DOUBLE_NEW_LINE.to_string())?;
         for (i, cp) in code_pairs.iter().enumerate() {
-            if !cp.swap {
+            let code_vec: CodeVec = cp.parse()?;
+            if code_vec.v[0].compare(&code_vec.v[1]).is_lt() {
                 val += i + 1;
             }
         }
