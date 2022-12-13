@@ -8,29 +8,24 @@ use serde_json;
 
 trait MsgComp {
     fn compare(&self, r: &Self) -> Ordering;
-    fn to_array(&self) -> Self;
 }
 
 impl MsgComp for serde_json::Value {
-    fn to_array(&self) -> Self {
-        Self::Array(vec![Self::from(self.as_u64().unwrap())])
-    }
-
     fn compare(&self, r: &Self) -> Ordering {
         if self.is_number() {
             if r.is_number() {
                 return self.as_u64().unwrap().cmp(&r.as_u64().unwrap());
             }
-            let v = self.to_array();
+            let v = Self::Array(vec![Self::from(self.as_u64().unwrap())]);
             return v.compare(r);
         }
 
         if r.is_number() {
-            let v = r.to_array();
+            let v = Self::Array(vec![Self::from(r.as_u64().unwrap())]);
             return self.compare(&v);
         }
 
-        // else we ahve two arrays
+        // else we have two arrays
         let mut l_pos = 0;
         let mut r_pos = 0;
         while l_pos < self.as_array().unwrap().len() && r_pos < r.as_array().unwrap().len() {
