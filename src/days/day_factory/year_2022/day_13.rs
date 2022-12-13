@@ -4,121 +4,49 @@ use crate::input_reader;
 use crate::days::day_factory::Day;
 use crate::days::day_factory::types::DOUBLE_NEW_LINE;
 
-#[derive(Debug,PartialEq, PartialOrd, Clone)]
-enum CodeMap {
-    Val(u32),
-    Array(Vec<CodeMap>),
+use serde_json;
+
+trait MsgComp {
+    fn compare(&self, r: &Self) -> Ordering;
 }
 
-impl CodeMap {
-
-    pub fn to_codemap(&self) -> Self {
-        match self {
-            Self::Val(v) => Self::Val(*v),
-            Self::Array(v) => Self::Array(v.to_vec()),
-        }
-    }
-
-    pub fn is_val(&self) -> bool{
-        matches!(self, Self::Val(_v))
-    }
-
-    pub fn get_val(&self) -> Option<u32> {
-        match self {
-            Self::Val(v) => Some(*v),
-            _ => None,
-        }
-    }
-
-    pub fn get_vec(&self) -> Option<&Vec<Self>> {
-        match self {
-            Self::Array(v) => Some(v),
-            _ => None,
-        }
-    }
-
-    fn compare(& self, r:&CodeMap) -> Ordering {
-        if self.is_val() && r.is_val() {
-            return self.get_val().unwrap().cmp(&r.get_val().unwrap());
+impl MsgComp for serde_json::Value {
+    fn compare(&self, r: &Self) -> Ordering {
+        if self.is_number() && r.is_number() {
+            return self.as_u64().unwrap().cmp(&r.as_u64().unwrap());
         }
     
-        if !self.is_val() && !r.is_val() {
+        if !self.is_number() && !r.is_number() {
             let mut l_pos = 0;
             let mut r_pos = 0;
-            while l_pos < self.get_vec().unwrap().len() && r_pos < r.get_vec().unwrap().len() {
-                let dif = self.get_vec().unwrap()[l_pos].compare(&r.get_vec().unwrap()[r_pos]);
+            while l_pos < self.as_array().unwrap().len() && r_pos < r.as_array().unwrap().len() {
+                let dif = self.as_array().unwrap()[l_pos].compare(&r.as_array().unwrap()[r_pos]);
                 if dif.is_ne(){
                     return dif;
                 }
                 l_pos += 1;
                 r_pos += 1;
             }
-            return self.get_vec().unwrap().len().cmp(&r.get_vec().unwrap().len());
+            return self.as_array().unwrap().len().cmp(&r.as_array().unwrap().len());
         }
     
-        if self.is_val() {
-            let v = CodeMap::Array(vec![CodeMap::Val(self.get_val().unwrap())]);
+        if self.is_number() {
+            let v = serde_json::Value::Array(vec![serde_json::Value::from(self.as_u64().unwrap())]);
             return v.compare(r);
         }
     
-        let v = CodeMap::Array(vec![CodeMap::Val(r.get_val().unwrap())]);
-        self.compare(&v)
-
-    }
-
-    fn parse_string(s: &[char]) -> CodeMap {
-        let mut v: Vec<CodeMap> = Vec::new();
-        if s.is_empty() {
-            return CodeMap::Array(v);
-        }
-
-        let mut pos = 0;
-
-        while pos < s.len() {
-            if s[pos] == '[' {
-                let mut brace_count = 1;
-                let mut array_end_index = pos;
-                while brace_count > 0 {
-                    array_end_index += 1;
-                    match s[array_end_index] {
-                        '[' => brace_count += 1,
-                        ']' => brace_count -= 1,
-                        _ => (),
-                    }
-                }
-                v.push(CodeMap::parse_string(&s[pos+1..array_end_index]));
-                pos = array_end_index + 1;
-            } else if s[pos] == ',' {
-                pos += 1;
-            } else {
-                let mut val_end_index = pos;
-                while val_end_index < s.len() && s[val_end_index] != ',' {
-                    val_end_index += 1;
-                }
-                v.push(CodeMap::Val(String::from_iter(&s[pos..val_end_index]).parse().unwrap()));
-                pos = val_end_index + 1;
-            }
-        }
-
-        CodeMap::Array(v)
-    }
-
-}
-
-impl std::str::FromStr for CodeMap {
-    type Err = std::num::ParseIntError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let chars: Vec<char> = s.chars().collect();
-        Ok(CodeMap::parse_string(&chars[1..chars.len()-1]))
+        let v = serde_json::Value::Array(vec![serde_json::Value::from(r.as_u64().unwrap())]);
+        self.compare(&v)        
     }
 }
+
+#[derive(Debug)]
 struct CodeVec {
-    v: Vec<CodeMap>,
+    v: Vec<serde_json::Value>,
 }
 
 impl std::str::FromStr for CodeVec {
-    type Err = std::num::ParseIntError;
+    type Err = serde_json::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(CodeVec { 
@@ -151,11 +79,11 @@ impl Day for Day13 {
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut codes: CodeVec = ipr.whole()?;
-        let v2: CodeMap = "[[2]]".parse()?;
-        let v6: CodeMap = "[[6]]".parse()?;
+        let v2: serde_json::Value = "[[2]]".parse()?;
+        let v6: serde_json::Value = "[[6]]".parse()?;
 
-        codes.v.push(v2.to_codemap());
-        codes.v.push(v6.to_codemap());
+        codes.v.push(v2.clone());
+        codes.v.push(v6.clone());
 
         codes.v.sort_by(|a, b| a.compare(b));
 
