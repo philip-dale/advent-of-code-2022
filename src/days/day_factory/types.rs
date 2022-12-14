@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 #[cfg(windows)]
 pub const DOUBLE_NEW_LINE: & str = "\r\n\r\n";
 #[cfg(not(windows))]
@@ -145,8 +146,20 @@ pub struct Point {
 
 
 impl Point {
+    #[allow(dead_code)]
+    pub fn new() -> Self {
+        Point{x:0, y:0}
+    }
+
     pub fn as_point(&self) -> Self{
         Point { x: self.x, y: self.y }
+    }
+
+    pub fn cmp(&self, c:&Self) -> Ordering {
+        if self.x == c.x {
+            return self.y.cmp(&c.y);
+        }
+        self.x.cmp(&c.x)
     }
 
     #[allow(dead_code)]
