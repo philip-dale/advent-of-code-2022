@@ -11,9 +11,7 @@ struct Cave {
     m: HashSet<Point>,
     x_min: usize,
     x_max: usize,
-    y_min: usize,
     y_max: usize,
-    sand_entry: Point,
 }
 
 impl std::str::FromStr for Cave {
@@ -24,9 +22,7 @@ impl std::str::FromStr for Cave {
             m: HashSet::new(),
             x_min: usize::MAX,
             x_max: 0,
-            y_min: usize::MAX,
             y_max: 0,
-            sand_entry: Point { x: 500, y: 0 },
         };
         let sl: Vec<&str> = s.lines().collect();
         for l in sl {
@@ -68,9 +64,6 @@ impl Cave {
                 if x > self.x_max {
                     self.x_max = x;
                 }
-                if y < self.y_min {
-                    self.y_min = y;
-                }
                 if y > self.y_max {
                     self.y_max = y;
                 }
@@ -79,7 +72,8 @@ impl Cave {
     }
 
     pub fn run(&mut self) -> u64 {
-        let mut sand_pos = self.sand_entry.as_point();
+        let entry_point = Point{x:500, y:0};
+        let mut sand_pos = entry_point.as_point();
         let mut rest_count = 0;
         loop {
             if sand_pos.y + 1 > self.y_max {
@@ -105,13 +99,13 @@ impl Cave {
             }) {
                 sand_pos.y += 1;
                 sand_pos.x += 1;
-            } else if sand_pos.cmp(&self.sand_entry).is_eq() {
+            } else if sand_pos.cmp(&entry_point).is_eq() {
                 // Jam
                 return rest_count + 1;
             } else {
                 // Comes to rest
                 self.m.insert(sand_pos);
-                sand_pos = self.sand_entry.as_point();
+                sand_pos = entry_point.as_point();
                 rest_count += 1;
             }
         }
