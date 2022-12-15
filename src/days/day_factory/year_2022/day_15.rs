@@ -133,12 +133,25 @@ impl std::str::FromStr for PointSet {
             ps.sensors.insert(sensor.clone());
             let d = sensor.mhd(&beacon);
 
-            let y_range = sensor.y-d..sensor.y+d;
+            
             // let x_range = sensor.x-d..sensor.x+d;
             println!("{} - {} : {}", &caps[1], &caps[2], d);
-            if (y_range.start < TARGET_AREA && y_range.start > 0) || (y_range.end < TARGET_AREA && y_range.end > 0) {
-                for m in 0..TARGET_AREA {
-                    let max_y = d - (sensor.y - m).abs();
+
+            // let max_y = d - (sensor.y - TARGET_LINE).abs();
+            // if max_y < 0 {
+            //     continue;
+            // }
+            // ps.add_sensor(sensor.clone(), d);
+
+
+            let y_range = sensor.y-d..sensor.y+d;
+            let x_range = sensor.x-d..sensor.x+d;
+
+            if (y_range.start < TARGET_AREA && y_range.start > 0) || (y_range.end < TARGET_AREA && y_range.end > 0) && 
+               (x_range.start < TARGET_AREA && x_range.start > 0) || (x_range.end < TARGET_AREA && x_range.end > 0) {
+                
+                for a in 0..TARGET_AREA {
+                    let max_y = d - (sensor.y - a).abs();
                     
                     if max_y < 0 {
                         continue;
@@ -146,6 +159,7 @@ impl std::str::FromStr for PointSet {
     
                     ps.add_sensor(sensor.clone(), d);
                 }
+                
             }
 
             
