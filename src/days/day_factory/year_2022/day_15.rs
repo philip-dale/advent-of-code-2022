@@ -73,12 +73,12 @@ impl PointSet {
         // looking for a point that is d+1 away from all shapes and in our target area
         for (p, r) in &self.sensors {
 
-            for dx in 0..r+2{
-                let dy = r-dx+1;
+            for outside_x in 0..r+2{
+                let outside_y = r-outside_x+1;
                 
                 for (sx, sy) in DELTAS {
-                    let x = p.x+(dx*sx);
-                    let y = p.y+(dy*sy);
+                    let x = p.x+(outside_x*sx);
+                    let y = p.y+(outside_y*sy);
                     if !((0..=a).contains(&x) && (0..=a).contains(&y)){
                         continue
                     }
@@ -125,18 +125,21 @@ impl std::str::FromStr for PointSet {
             let y_range = sensor.y-d..sensor.y+d;
             let x_range = sensor.x-d..sensor.x+d;
 
-            if x_range.start < ps.x_min {
-                ps.x_min = x_range.start;
+            if y_range.contains(&TARGET_LINE) {
+                if x_range.start < ps.x_min {
+                    ps.x_min = x_range.start;
+                }
+                if x_range.end > ps.x_max {
+                    ps.x_max = x_range.end;
+                }
+                if y_range.start < ps.y_min {
+                    ps.y_min = y_range.start;
+                }
+                if y_range.end > ps.y_max {
+                    ps.y_max = y_range.end;
+                }
             }
-            if x_range.end > ps.x_max {
-                ps.x_max = x_range.end;
-            }
-            if y_range.start < ps.y_min {
-                ps.y_min = y_range.start;
-            }
-            if y_range.end > ps.y_max {
-                ps.y_max = y_range.end;
-            }
+            
         }
         Ok(ps)
     }
