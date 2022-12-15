@@ -57,11 +57,10 @@ impl PointSet {
         let mut total = 0;
         'outer: for x in self.x_min..self.x_max+1 {
             for s in &self.sensors {
-                if self.beacons.contains(&SPoint{x,y}) {
-                    continue 'outer;
-                }
                 if Self::in_range(x, y, s) {
-                    total += 1;
+                    if !self.beacons.contains(&SPoint{x,y}) {
+                        total += 1;
+                    }
                     continue 'outer;
                 }
             }
