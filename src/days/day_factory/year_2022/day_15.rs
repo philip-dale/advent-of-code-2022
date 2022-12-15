@@ -5,7 +5,12 @@ use crate::days::day_factory::Day;
 use std::collections::HashSet;
 use regex::Regex;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+const TARGET_LINE:i64 = 2000000;
+// const TARGET_LINE:i64 = 10;
+
+const TARGET_AREA:i64 = 4000000;
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone)]
 pub struct SPoint {
     pub x: i64,
     pub y: i64,
@@ -32,6 +37,8 @@ impl std::str::FromStr for SPoint {
 
 struct PointSet {
     s: HashSet<SPoint>,
+    beacons: HashSet<SPoint>,
+    sensors: HashSet<SPoint>,
     x_min: i64,
     x_max: i64,
     y_min: i64,
@@ -40,21 +47,18 @@ struct PointSet {
 
 impl PointSet {
     pub fn add_sensor(& mut self, s:SPoint, d:i64) {
-        for x in 0..d+1 {
-            for y in 0..d+1-x {
-                let x_pos = s.x+x;
-                let y_pos = s.y+y;
-                let x_neg = s.x-x;
-                let y_neg = s.y-y;
-                self.add_point(SPoint{x: x_pos,y: y_pos});
-                self.add_point(SPoint{x: x_neg,y: y_pos});
-                self.add_point(SPoint{x: x_pos,y: y_neg});
-                self.add_point(SPoint{x: x_neg,y: y_neg});
-            }
+        let line_delta = (TARGET_LINE - s.y).abs();
+        for x in 0..d-line_delta+1 {
+            let x_pos = s.x+x;
+            let y_pos = TARGET_LINE;
+            let x_neg = s.x-x;
+            self.add_point(SPoint{x: x_pos,y: y_pos});
+            self.add_point(SPoint{x: x_neg,y: y_pos});
         }
     }
 
     pub fn add_point(& mut self, s:SPoint) {
+        
         if s.x < self.x_min {
             self.x_min = s.x;
         }
@@ -67,13 +71,17 @@ impl PointSet {
         if s.y > self.y_max {
             self.y_max = s.y;
         }
+
         self.s.insert(s);
     }
 
     pub fn count_y_line(&self, y:i64) -> u64{
         let mut total = 0;
-        for x in self.x_min..self.x_max {
+        for x in self.x_min..self.x_max+1 {
             if self.s.contains(&SPoint{x,y}) {
+                if self.beacons.contains(&SPoint{x,y}) {
+                    continue;
+                }
                 total += 1;
             }
         }
@@ -85,7 +93,12 @@ impl PointSet {
             print!("{} ", y);
             for x in self.x_min..self.x_max+1 {
                 if self.s.contains(&SPoint{x,y}) {
-                    print!("#", );
+                    if self.beacons.contains(&SPoint{x,y}) {
+                        print!("B", );
+                    } else {
+                        print!("#", );
+                    }
+                    
                 } else {
                     print!(".", );
                 }
@@ -103,6 +116,8 @@ impl std::str::FromStr for PointSet {
         let ls: Vec<&str> = s.lines().collect();
         let mut ps = Self{
             s: HashSet::new(),
+            beacons: HashSet::new(),
+            sensors: HashSet::new(),
             x_min: i64::MAX,
             x_max: i64::MIN,
             y_min: i64::MAX,
@@ -111,11 +126,32 @@ impl std::str::FromStr for PointSet {
         for l in ls {
             let re = Regex::new(r"Sensor at (x=-?\d+, y=-?\d+): closest beacon is at (x=-?\d+, y=-?\d+)").unwrap();
             let caps = re.captures(l).unwrap();
-            println!("{} - {}", &caps[1], &caps[2]);
+            // println!("{} - {}", &caps[1], &caps[2]);
             let sensor: SPoint = caps[1].parse()?;
             let beacon: SPoint = caps[2].parse()?;
+            ps.beacons.insert(beacon.clone());
+            ps.sensors.insert(sensor.clone());
             let d = sensor.mhd(&beacon);
-            ps.add_sensor(sensor, d);
+
+            let y_range = sensor.y-d..sensor.y+d;
+            // let x_range = sensor.x-d..sensor.x+d;
+            println!("{} - {} : {}", &caps[1], &caps[2], d);
+            if (y_range.start < TARGET_AREA && y_range.start > 0) || (y_range.end < TARGET_AREA && y_range.end > 0) {
+                for m in 0..TARGET_AREA {
+                    let max_y = d - (sensor.y - m).abs();
+                    
+                    if max_y < 0 {
+                        continue;
+                    }
+    
+                    ps.add_sensor(sensor.clone(), d);
+                }
+            }
+
+            
+            
+
+            
         }
 
         Ok(ps)
@@ -127,8 +163,8 @@ pub struct Day15{}
 impl Day for Day15 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let data:PointSet = ipr.whole()?;
-        data.print();
-        Ok(data.count_y_line(10).to_string())
+        // data.print();
+        Ok(data.count_y_line(TARGET_LINE).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
