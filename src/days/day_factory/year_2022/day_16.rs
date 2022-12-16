@@ -35,6 +35,12 @@ impl std::str::FromStr for Cave {
     }
 }
 
+struct Worker {
+    name: String,
+    time_remaining: u64,
+    preasure: u64,
+}
+
 struct CaveSystem {
     m: HashMap<String, Cave>,
     working: HashSet<String>,
@@ -72,9 +78,13 @@ impl CaveSystem {
         let mut best = 0;
         let time_remaining = 30;
         let mut visited: HashSet<String> = HashSet::new();
-        let path = String::from("AA->");
         for n in &self.m.get(&String::from("AA")).unwrap().working_distance {
-            let val = self.calc_prasure(n.0, time_remaining - n.1, 0, & mut visited, &path);
+            let worker = Worker {
+                name: n.0.to_string(),
+                time_remaining: time_remaining - n.1,
+                preasure: 0,
+            };
+            let val = self.calc_prasure(&worker, & mut visited);
             if val > best {
                 best = val;
             }
@@ -84,24 +94,110 @@ impl CaveSystem {
 
     }
 
-    fn calc_prasure(&self, name: &String, time_remaining: u64, preasure: u64, visited: & mut HashSet<String>, path: &String) -> u64 {
-        let path = path.to_string() + name + "->";
-        let time_remaining = time_remaining -1;
-        let preasure = preasure + (time_remaining * self.m.get(name).unwrap().flow);
+    fn calc_prasure(&self, worker_in: &Worker, visited: & mut HashSet<String>) -> u64 {
 
-        visited.insert(name.to_string());
+        let worker = Worker {
+            name: worker_in.name.to_string(),
+            time_remaining: worker_in.time_remaining -1,
+            preasure: worker_in.preasure + ((worker_in.time_remaining - 1) * self.m.get(&worker_in.name).unwrap().flow)
+        };
 
-        let mut best = preasure;
-        for n in &self.m.get(name).unwrap().working_distance {
-            if !visited.contains(n.0) && time_remaining > *n.1 {
+        visited.insert(worker.name.to_string());
 
-                let val = self.calc_prasure(n.0, time_remaining - n.1, preasure, visited, &path);
+        let mut best = worker.preasure;
+        for n in &self.m.get(&worker.name).unwrap().working_distance {
+            if !visited.contains(n.0) && worker.time_remaining > *n.1 {
+                let worker = Worker {
+                    name: n.0.to_string(),
+                    time_remaining: worker.time_remaining - n.1,
+                    preasure: worker.preasure,
+                };
+                let val = self.calc_prasure(&worker, visited);
                 if val > best {
                     best = val;
                 }
             }
         }
-        visited.remove(name);
+        visited.remove(&worker.name);
+
+        best
+    }
+
+    pub fn get_max_preasure_2(&self) -> u64 {
+        let mut best = 0;
+        let time_remaining = 26;
+        let mut visited: HashSet<String> = HashSet::new();
+        for n in &self.m.get(&String::from("AA")).unwrap().working_distance {
+
+            for e in &self.m.get(&String::from("AA")).unwrap().working_distance {
+                if e.0 != n.0 {
+                    
+                    let worker = Worker {
+                        name: n.0.to_string(),
+                        time_remaining: time_remaining - n.1,
+                        preasure: 0,
+                    };
+                    let elephant = Worker {
+                        name: e.0.to_string(),
+                        time_remaining: time_remaining - e.1,
+                        preasure: 0,
+                    };
+
+                    let val = self.calc_prasure_2(&worker, &elephant, & mut visited);
+                    if val > best {
+                        best = val;
+                    }
+                }
+            }
+        }
+
+        best
+
+    }
+
+    fn calc_prasure_2(&self, worker_in: &Worker, elephant_in: &Worker, visited: & mut HashSet<String>) -> u64 {
+        let worker = Worker {
+            name: worker_in.name.to_string(),
+            time_remaining: worker_in.time_remaining -1,
+            preasure: worker_in.preasure + ((worker_in.time_remaining - 1) * self.m.get(&worker_in.name).unwrap().flow)
+        };
+        visited.insert(worker.name.to_string());
+       
+        let elephant = Worker {
+            name: elephant_in.name.to_string(),
+            time_remaining: elephant_in.time_remaining -1,
+            preasure: elephant_in.preasure + ((elephant_in.time_remaining - 1) * self.m.get(&elephant_in.name).unwrap().flow)
+        };
+        visited.insert(elephant.name.to_string());
+
+
+        let mut best = worker.preasure + elephant.preasure;
+        for n in &self.m.get(&worker.name).unwrap().working_distance {
+            if !visited.contains(n.0) && worker.time_remaining > *n.1 {
+                for e in &self.m.get(&elephant.name).unwrap().working_distance {
+                    if !visited.contains(e.0) && elephant.time_remaining > *e.1 && e.0 != n.0{
+                        let worker = Worker {
+                            name: n.0.to_string(),
+                            time_remaining: worker.time_remaining - n.1,
+                            preasure: worker.preasure,
+                        };
+
+                        let elephant = Worker {
+                            name: e.0.to_string(),
+                            time_remaining: elephant.time_remaining - e.1,
+                            preasure: elephant.preasure,
+                        };
+
+                        let val = self.calc_prasure_2(&worker, &elephant, visited);
+                        if val > best {
+                            best = val;
+                        }
+                    }
+                }
+            }
+        }
+        visited.remove(&worker.name);
+        visited.remove(&elephant.name);
 
         best
     }
@@ -113,7 +209,6 @@ impl CaveSystem {
                 let val = self.calc_distance(ns, ne, 0, & mut visited);
                 self.m.get_mut(ns).unwrap().working_distance.insert(ne.to_string(), val);
             }
-            // println!("{} - {:?}", ns, self.m.get(ns).unwrap().working_distance);
         }
 
         // Also do AA
@@ -122,7 +217,6 @@ impl CaveSystem {
             let val = self.calc_distance(ns, ne, 0, & mut visited);
             self.m.get_mut(ns).unwrap().working_distance.insert(ne.to_string(), val);
         }
-        // println!("{} - {:?}", ns, self.m.get(ns).unwrap().working_distance);
     }
 
     fn calc_distance(&self, start: &String, end: &String, steps: u64, visited: & mut HashSet<String>) -> u64{
@@ -158,6 +252,8 @@ impl Day for Day16 {
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        Ok(ipr.fullname()?)
+        let mut cave_system: CaveSystem = ipr.whole()?;
+        cave_system.calc_distances();
+        Ok(cave_system.get_max_preasure_2().to_string())
     }
 }
