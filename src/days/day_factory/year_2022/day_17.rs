@@ -182,7 +182,6 @@ impl Board {
         let mut shape = Shape::new();
         let mut rock_count = 0;
 
-        // todo thi is grabing next shape then not using it if run again
         while  rock_count < rocks + 1 {
             match next_stage {
                 NextStage::New => {
