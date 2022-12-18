@@ -230,21 +230,17 @@ impl Board {
 
 
     pub fn find_pattern(&self, num_shapes: usize, confirm_size: usize) -> (usize, usize) {
-
         let max_size = (self.shape_list.len() / confirm_size) / num_shapes;
-        // let mut found = false;
 
         for block_size in 1..max_size-1 {
             let pattern_len = block_size*num_shapes;
 
             for test_start in 0..self.shape_list.len() - confirm_size*pattern_len {
                 let mut found = true;
-                // println!("Testing test_start = {}, pattern_len = {}", test_start, pattern_len);
                 'pattern_for: for i in test_start..test_start+pattern_len {
                     
                     for check in 1..confirm_size+1 {
                         if self.shape_list[i].pos.x != self.shape_list[i+(check * pattern_len)].pos.x {
-                        // if self.shape_list[i] != self.shape_list[i+(check * pattern_len)] {
                             found = false;
                             break 'pattern_for;
                         }
