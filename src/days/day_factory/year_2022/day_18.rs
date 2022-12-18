@@ -5,6 +5,7 @@ use crate::days::day_factory::types::Point3D;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::VecDeque;
 
 struct Rock {
     pos: HashSet<Point3D>,
@@ -93,6 +94,7 @@ struct Rocks {
     r: Vec<Rock>,
     min: Point3D,
     max: Point3D,
+    air: HashSet<Point3D>,
 }
 
 impl Rocks {
@@ -123,25 +125,6 @@ impl Rocks {
         false
     }
 
-    fn is_external(&self, p: &Point3D, visited: & mut HashSet<Point3D>) -> bool{
-        visited.insert(*p);
-        for d in Point3D::SIDE_DELTAS {
-            let current = Point3D{x: p.x + d.x, y: p.y + d.y, z: p.z + d.z};
-
-            if current.x < self.min.x || current.x > self.max.x || 
-                current.y < self.min.y || current.y > self.max.y ||
-                current.z < self.min.z || current.z > self.max.z {
-    
-                return true;
-            } else if self.is_rock(&current) {
-                continue;
-            } else if !visited.contains(&current) && self.is_external(&current, visited) {
-                return true;
-            }
-        }
-        false
-    }
-
     pub fn cout_all_sides(&self) -> usize {
         let mut count = 0;
         for r in &self.r {
@@ -154,7 +137,7 @@ impl Rocks {
         let mut count = 0;
         for r in &self.r {
             for e in r.get_edges() {
-                if self.is_external(&e.0, & mut HashSet::new()) {
+                if self.air.contains(&e.0) {
                     count += e.1;
                 }
             }
@@ -166,6 +149,31 @@ impl Rocks {
         for r in &self.r {
             r.min.update_min_max(& mut self.min, & mut self.max);
             r.max.update_min_max(& mut self.min, & mut self.max);
+        }
+    }
+    fn update_air(& mut self) {
+        let mut queue = VecDeque::new();
+        queue.push_back(self.min);
+        self.air.insert(self.min);
+        while !queue.is_empty() {
+            let p = queue.pop_front().unwrap();
+            for d in Point3D::SIDE_DELTAS {
+                
+                let current = Point3D{x: p.x + d.x, y: p.y + d.y, z: p.z + d.z};
+
+                if current.x < self.min.x-1 || current.x > self.max.x+1 || 
+                    current.y < self.min.y-1 || current.y > self.max.y+1 ||
+                    current.z < self.min.z-1 || current.z > self.max.z+1 {
+                        continue;
+                }
+
+                if self.is_rock(&current) || self.air.contains(&current) {
+                    continue;
+                }
+
+                self.air.insert(current);
+                queue.push_back(current);
+            }
         }
     }
 }
@@ -185,9 +193,11 @@ impl std::str::FromStr for Rocks {
             },
             min: Point3D::max(),
             max: Point3D::min(),
+            air: HashSet::new(),
         };
 
         out.update_min_max();
+        out.update_air();
 
         Ok(out)
     }
