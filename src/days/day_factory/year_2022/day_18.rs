@@ -1,33 +1,29 @@
 use std::error::Error;
 use crate::input_reader;
 use crate::days::day_factory::Day;
+use crate::days::day_factory::types::Point3D;
+
 use std::collections::HashSet;
 use std::collections::HashMap;
 
-static DELTAS: &[(i64, i64, i64)] = &[(-1, 0, 0), (1, 0, 0), (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1)];
-
-fn get_neighbours(pos:&(i64, i64, i64)) -> HashSet<(i64, i64, i64)> {
-    let mut n = HashSet::new();
-    for d in DELTAS {
-        n.insert((pos.0 + d.0, pos.1 + d.1, pos.2 + d.2 ));
-    }
-    n
-}
-
 struct Rock {
-    pos: HashSet<(i64, i64, i64)>,
-    neighbours: HashSet<(i64, i64, i64)>,
+    pos: HashSet<Point3D>,
+    neighbours: HashSet<Point3D>,
+    min: Point3D,
+    max: Point3D,
 }
 
 impl Rock {
-    pub fn new(pos: (i64, i64, i64)) -> Self {
+    pub fn new(pos: Point3D) -> Self {
         Self {
             pos : {
                 let mut p = HashSet::new();
                 p.insert(pos);
                 p
             },
-            neighbours: get_neighbours(&pos),
+            neighbours: pos.get_neighbours(),
+            min: pos,
+            max: pos,
         }
     }
 
@@ -43,6 +39,7 @@ impl Rock {
     pub fn merge(& mut self, m:Self){
         for p in m.pos {
             self.neighbours.remove(&p);
+            p.update_min_max(& mut self.min, & mut self.max);
             self.pos.insert(p);
         }
         
@@ -53,18 +50,18 @@ impl Rock {
         }
     }
 
-    pub fn is_edge(&self, p: &(i64, i64, i64)) -> bool {
+    pub fn is_edge(&self, p: &Point3D) -> bool {
         if self.neighbours.contains(p) {
             return true;
         }
         false
     }
 
-    pub fn get_edges(&self) -> HashMap<(i64, i64, i64), usize> {
+    pub fn get_edges(&self) -> HashMap<Point3D, usize> {
         let mut edges = HashMap::new();
 
         for p in &self.pos {
-            let neighbours = get_neighbours(p);
+            let neighbours = p.get_neighbours();
             for n in &neighbours {
                 if self.is_edge(n) {
                     edges.entry(*n).and_modify(|p| *p += 1).or_insert(1);
@@ -82,50 +79,20 @@ impl Rock {
         count
     }
 
-    pub fn get_min_max(&self) -> ((i64, i64, i64), (i64, i64, i64)) {
-        let mut val_min = (i64::MAX, i64::MAX, i64::MAX);
-        let mut val_max = (i64::MIN, i64::MIN, i64::MIN);
-
-        for p in &self.pos {
-            if p.0 < val_min.0 {
-                val_min.0 = p.0;
-            }
-            if p.0 > val_max.0 {
-                val_max.0 = p.0;
-            }
-
-            if p.1 < val_min.1 {
-                val_min.1 = p.1;
-            }
-            if p.1 > val_max.1 {
-                val_max.1 = p.1;
-            }
-
-            if p.2 < val_min.2 {
-                val_min.2 = p.2;
-            }
-            if p.2 > val_max.2 {
-                val_max.2 = p.2;
-            }
-        }
-
-        (val_min, val_max)
-
-    }
-
 }
 
 impl std::str::FromStr for Rock {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let points: Vec<&str> = s.split(',').collect();
-        Ok(Self::new((points[0].parse()?, points[1].parse()?, points[2].parse()?)))
+        Ok(Self::new(s.parse()?))
     }
 }
 
 struct Rocks {
     r: Vec<Rock>,
+    min: Point3D,
+    max: Point3D,
 }
 
 impl Rocks {
@@ -147,7 +114,7 @@ impl Rocks {
         }
     }
 
-    fn is_rock(&self, p: &(i64, i64, i64)) -> bool {
+    fn is_rock(&self, p: &Point3D) -> bool {
         for r2 in &self.r {
             if r2.pos.contains(p) {
                 return true;
@@ -156,17 +123,14 @@ impl Rocks {
         false
     }
 
-    fn is_external(&self, p: &(i64, i64, i64), visited: & mut HashSet<(i64, i64, i64)>) -> bool{
-
-        let (min, max) = self.get_min_max();
-
+    fn is_external(&self, p: &Point3D, visited: & mut HashSet<Point3D>) -> bool{
         visited.insert(*p);
-        for d in DELTAS {
-            let current = (p.0 + d.0, p.1 + d.1, p.2 + d.2);
+        for d in Point3D::SIDE_DELTAS {
+            let current = Point3D{x: p.x + d.x, y: p.y + d.y, z: p.z + d.z};
 
-            if current.0 < min.0 || current.0 > max.0 || 
-                current.1 < min.1 || current.1 > max.1 ||
-                current.2 < min.2 || current.2 > max.2 {
+            if current.x < self.min.x || current.x > self.max.x || 
+                current.y < self.min.y || current.y > self.max.y ||
+                current.z < self.min.z || current.z > self.max.z {
     
                 return true;
             } else if self.is_rock(&current) {
@@ -198,35 +162,11 @@ impl Rocks {
         count
     }
 
-    fn get_min_max(&self) -> ((i64, i64, i64), (i64, i64, i64)) {
-        let mut val_min = (i64::MAX, i64::MAX, i64::MAX);
-        let mut val_max = (i64::MIN, i64::MIN, i64::MIN);
-    
+    fn update_min_max(& mut self) {
         for r in &self.r {
-            let (r_min, r_max) = r.get_min_max();
-            if r_min.0 < val_min.0 {
-                val_min.0 = r_min.0;
-            }
-            if r_max.0 > val_max.0 {
-                val_max.0 = r_max.0;
-            }
-    
-            if r_min.1 < val_min.1 {
-                val_min.1 = r_min.1;
-            }
-            if r_max.1 > val_max.1 {
-                val_max.1 = r_max.1;
-            }
-    
-            if r_min.2 < val_min.2 {
-                val_min.2 = r_min.2;
-            }
-            if r_max.2 > val_max.2 {
-                val_max.2 = r_max.2;
-            }
+            r.min.update_min_max(& mut self.min, & mut self.max);
+            r.max.update_min_max(& mut self.min, & mut self.max);
         }
-    
-        (val_min, val_max)
     }
 }
 
@@ -235,7 +175,7 @@ impl std::str::FromStr for Rocks {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let points: Vec<&str> = s.lines().collect();
-        Ok(Self {
+        let mut out = Self {
             r: {
                 let mut rs = Vec::new(); 
                 for p in points {
@@ -243,7 +183,13 @@ impl std::str::FromStr for Rocks {
                 }
                 rs
             },
-        })
+            min: Point3D::max(),
+            max: Point3D::min(),
+        };
+
+        out.update_min_max();
+
+        Ok(out)
     }
 }
 

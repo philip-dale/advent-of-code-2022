@@ -1,4 +1,6 @@
 use std::cmp::Ordering;
+use std::collections::HashSet;
+
 #[cfg(windows)]
 pub const DOUBLE_NEW_LINE: & str = "\r\n\r\n";
 #[cfg(not(windows))]
@@ -232,6 +234,71 @@ impl std::str::FromStr for Point {
         Ok(Point{
             x: vals[0].trim().parse()?,
             y: vals[1].trim().parse()?,
+        })
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+pub struct Point3D {
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
+}
+
+impl Point3D {
+    pub const SIDE_DELTAS: &[Point3D] = &[Point3D{x: -1, y: 0, z: 0}, Point3D{x: 1, y: 0, z: 0}, Point3D{x: 0, y: -1, z: 0}, Point3D{x: 0, y: 1, z: 0}, Point3D{x: 0, y: 0, z: -1}, Point3D{x: 0, y: 0, z: 1}];
+
+    pub fn get_neighbours(&self) -> HashSet<Point3D> {
+        
+        let mut n = HashSet::new();
+        for d in Self::SIDE_DELTAS {
+            n.insert(Self{x: self.x + d.x, y: self.y + d.y, z: self.z + d.z});
+        }
+        n
+    }
+
+    pub fn max() -> Self {
+        Self{x: i64::MAX, y: i64::MAX, z: i64::MAX}
+    }
+
+    pub fn min() -> Self {
+        Self{x: i64::MIN, y: i64::MIN, z: i64::MIN}
+    }
+
+    pub fn update_min_max(&self, min: & mut Self, max: &mut Self) {
+        if self.x < min.x {
+            min.x = self.x;
+        }
+        if self.x > max.x {
+            max.x = self.x;
+        }
+
+        if self.y < min.y {
+            min.y = self.y;
+        }
+        if self.y > max.y {
+            max.y = self.y;
+        }
+
+        if self.z < min.z {
+            min.z = self.z;
+        }
+        if self.z > max.z {
+            max.z = self.z;
+        }
+
+    }
+}
+
+impl std::str::FromStr for Point3D {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let vals:Vec<&str> = s.split(',').collect();
+        Ok(Self{
+            x: vals[0].trim().parse()?,
+            y: vals[1].trim().parse()?,
+            z: vals[2].trim().parse()?,
         })
     }
 }
