@@ -151,6 +151,7 @@ impl Rocks {
             r.max.update_min_max(& mut self.min, & mut self.max);
         }
     }
+    
     fn update_air(& mut self) {
         let mut queue = VecDeque::new();
         queue.push_back(self.min);
