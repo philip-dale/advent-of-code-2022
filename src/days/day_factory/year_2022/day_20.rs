@@ -2,7 +2,6 @@ use std::error::Error;
 use crate::input_reader;
 use crate::days::day_factory::Day;
 
-#[derive(Clone, PartialEq, Eq)]
 struct LinkNode {
     val: i64,
     index: usize,
@@ -40,37 +39,40 @@ impl LinkNodes {
         self.nodes[l].right = self.nodes[n].right;
     }
 
-    fn move_node_right_of(& mut self, n_source: usize, move_to: &LinkNode) {
+    fn move_node_right_of(& mut self, n_source: usize, d_index: usize) {
         self.remove(n_source);
 
-        self.nodes[move_to.right].left = self.nodes[n_source].index;
-        self.nodes[n_source].right = move_to.right;
-        self.nodes[move_to.index].right = self.nodes[n_source].index;
-        self.nodes[n_source].left = move_to.index;
+        let index = self.nodes[d_index].index;
+        let right = self.nodes[d_index].right;
+
+        self.nodes[right].left = self.nodes[n_source].index;
+        self.nodes[n_source].right = right;
+        self.nodes[index].right = self.nodes[n_source].index;
+        self.nodes[n_source].left = index;
     }
 
     pub fn mix(& mut self) {
         for ni in 0..self.nodes.len() {
-            let mut move_to = self.nodes[ni].clone();
+            let mut move_to_index = ni;
 
-            if move_to.val.abs() % (self.nodes.len() as i64 -1) == 0 {
+            if self.nodes[move_to_index].val.abs() % (self.nodes.len() as i64 -1) == 0 {
                 continue;
             }
 
-            match move_to.val {
+            match self.nodes[move_to_index].val {
                 val if val > 0 => {
-                    for _i in 0..move_to.val % (self.nodes.len() as i64 -1){
-                        move_to = self.nodes[move_to.right].clone();
+                    for _i in 0..self.nodes[move_to_index].val % (self.nodes.len() as i64 -1){
+                        move_to_index = self.nodes[move_to_index].right;
                     }
                 },
                 _ => {
                     // Note plus one so we can use move_node_right_of()
-                    for _i in 0..(move_to.val.abs() + 1 )% (self.nodes.len() as i64 -1){
-                        move_to = self.nodes[move_to.left].clone();
+                    for _i in 0..(self.nodes[move_to_index].val.abs() + 1 )% (self.nodes.len() as i64 -1){
+                        move_to_index = self.nodes[move_to_index].left;
                     }
                 }
             }
-            self.move_node_right_of(ni, &move_to);
+            self.move_node_right_of(ni, move_to_index);
         }
     }
 
