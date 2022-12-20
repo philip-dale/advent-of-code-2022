@@ -11,12 +11,22 @@ struct LinkNode {
 }
 
 impl LinkNode {
-    #[allow(dead_code)]
-    pub fn print(&self) {
-        print!("{{val = {}, index = {}, left = {}, right = {}}}, ", self.val, self.index, self.left, self.right);
+    pub fn new(val: i64, index: usize, max: usize) -> Self {
+        Self{
+            val,
+            index,
+            right: (index + 1) % max,
+            left: {
+                let pos = (index as i64 - 1) % max as i64;
+                if pos < 0 {
+                    (max as i64 + pos) as usize
+                } else {
+                    pos as usize
+                }
+            },
+        }
     }
 }
-
 struct LinkNodes {
     nodes: Vec<LinkNode>,
     zero_index: usize,
@@ -30,43 +40,37 @@ impl LinkNodes {
         self.nodes[l].right = self.nodes[n].right;
     }
 
+    fn move_node_right_of(& mut self, n_source: usize, move_to: &LinkNode) {
+        self.remove(n_source);
+
+        self.nodes[move_to.right].left = self.nodes[n_source].index;
+        self.nodes[n_source].right = move_to.right;
+        self.nodes[move_to.index].right = self.nodes[n_source].index;
+        self.nodes[n_source].left = move_to.index;
+    }
+
     pub fn mix(& mut self) {
         for ni in 0..self.nodes.len() {
-
             let mut move_to = self.nodes[ni].clone();
 
+            if move_to.val.abs() % (self.nodes.len() as i64 -1) == 0 {
+                continue;
+            }
+
             match move_to.val {
-                0 => continue,
                 val if val > 0 => {
                     for _i in 0..move_to.val % (self.nodes.len() as i64 -1){
                         move_to = self.nodes[move_to.right].clone();
                     }
-                    if move_to == self.nodes[ni] {
-                        continue;
-                    }
-                    self.remove(ni);
-
-                    self.nodes[move_to.right].left = self.nodes[ni].index;
-                    self.nodes[ni].right = move_to.right;
-                    self.nodes[move_to.index].right = self.nodes[ni].index;
-                    self.nodes[ni].left = move_to.index;
                 },
                 _ => {
-                    for _i in 0..move_to.val.abs() % (self.nodes.len() as i64 -1){
+                    // Note plus one so we can use move_node_right_of()
+                    for _i in 0..(move_to.val.abs() + 1 )% (self.nodes.len() as i64 -1){
                         move_to = self.nodes[move_to.left].clone();
                     }
-                    if move_to == self.nodes[ni] {
-                        continue;
-                    }
-
-                    self.remove(ni);
-
-                    self.nodes[move_to.left].right = self.nodes[ni].index;
-                    self.nodes[ni].left = move_to.left;
-                    self.nodes[move_to.index].left = self.nodes[ni].index;
-                    self.nodes[ni].right = move_to.index;
                 }
             }
+            self.move_node_right_of(ni, &move_to);
         }
     }
 
@@ -106,21 +110,7 @@ impl std::str::FromStr for LinkNodes {
                     if l == &"0" {
                         zero_index = n.len();
                     }
-
-                    n.push(LinkNode{
-                        val: l.parse()?,
-                        index: n.len(),
-                        right: (n.len() + 1) % ls.len(),
-                        left: {
-                            let pos = (n.len() as i64 - 1) % ls.len() as i64;
-                            if pos < 0 {
-                                (ls.len() as i64 + pos) as usize
-                            } else {
-                                pos as usize
-                            }
-
-                        },
-                    });
+                    n.push(LinkNode::new(l.parse()?, n.len(), ls.len()));
                 }
                 n
             },
