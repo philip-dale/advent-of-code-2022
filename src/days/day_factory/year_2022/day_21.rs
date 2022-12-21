@@ -41,11 +41,11 @@ struct Shouts {
 }
 
 impl Shouts {
-    pub fn solve(&self, monkey: &str) -> i64 {
+    pub fn solve(&self, monkey: &str) -> Option<i64> {
         match self.m.get(monkey).unwrap() {
-            Shout::Val(x) => *x,
+            Shout::Val(x) => Some(*x),
             Shout::Ins(x) => x.solve(self),
-            Shout::Unknown => todo!(),
+            Shout::Unknown => None,
         }
     }
 
@@ -54,27 +54,20 @@ impl Shouts {
             Shout::Val(x) => *x,
             Shout::Ins(x) => {
                 let (lhs, rhs) = x.get_monkeys();
-                if self.has_unknown(lhs) {
-                    let r_val = self.solve(rhs);
-                    let next_result = x.reverse_solve_lhs(result, r_val);
-                    self.solve_unknown(lhs, next_result)
-                } else {
-                    let l_val = self.solve(lhs);
-                    let next_result = x.reverse_solve_rhs(result, l_val);
-                    self.solve_unknown(rhs, next_result)
+                let l_val = self.solve(lhs);
+                let r_val = self.solve(rhs);
+                match l_val {
+                    None => {
+                        let next_result = x.reverse_solve_lhs(result, r_val.unwrap());
+                        self.solve_unknown(lhs, next_result)
+                    },
+                    Some(l_val) => {
+                        let next_result = x.reverse_solve_rhs(result, l_val);
+                        self.solve_unknown(rhs, next_result)
+                    }
                 }
             }
             Shout::Unknown => result,
-        }
-    }
-
-    pub fn has_unknown(&self, monkey: &str) -> bool {
-        match self.m.get(monkey).unwrap() {
-            Shout::Val(_x) => false,
-            Shout::Ins(x) => {
-                self.has_unknown(x.get_monkeys().0) || self.has_unknown(x.get_monkeys().1)
-            }
-            Shout::Unknown => true,
         }
     }
 
@@ -171,13 +164,24 @@ impl Instruction {
         }
     }
 
-    pub fn solve(&self, shouts: &Shouts) -> i64 {
+    pub fn solve(&self, shouts: &Shouts) -> Option<i64> {
+        let monkeys = self.get_monkeys();
+
+        let lhs = match shouts.solve(monkeys.0) {
+            Some(x) => x,
+            None => return None,
+        };
+        let rhs = match shouts.solve(monkeys.1) {
+            Some(x) => x,
+            None => return None,
+        };
+
         match self {
-            Self::Add(x, y) => shouts.solve(x) + shouts.solve(y),
-            Self::Sub(x, y) => shouts.solve(x) - shouts.solve(y),
-            Self::Mul(x, y) => shouts.solve(x) * shouts.solve(y),
-            Self::Div(x, y) => shouts.solve(x) / shouts.solve(y),
-            Self::Equ(x, y) => shouts.solve(x) / shouts.solve(y),
+            Self::Add(_, _) => Some(lhs + rhs),
+            Self::Sub(_, _) => Some(lhs - rhs),
+            Self::Mul(_, _) => Some(lhs * rhs),
+            Self::Div(_, _) => Some(lhs / rhs),
+            Self::Equ(_, _) => Some(lhs - rhs)
         }
     }
 
@@ -207,7 +211,7 @@ pub struct Day21 {}
 impl Day for Day21 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let shouts: Shouts = ipr.whole()?;
-        let val = shouts.solve("root");
+        let val = shouts.solve("root").unwrap();
         Ok(val.to_string())
     }
 
@@ -220,7 +224,7 @@ impl Day for Day21 {
         // Test answer
         shouts.set_val("humn", val);
         shouts.set_sub("root");
-        let res = shouts.solve("root");
+        let res = shouts.solve("root").unwrap();
         println!("res = {}", res);
 
         Ok(val.to_string())
