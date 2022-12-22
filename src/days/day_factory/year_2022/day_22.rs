@@ -153,6 +153,189 @@ impl Direction {
     }
 }
 
+
+// 0
+//213
+// 5
+// 4
+
+//Sample
+//  0
+//421
+//  53
+
+//Actual
+// 03
+// 1
+//25
+//4
+
+fn move_side_left(exit: & mut SPoint, origin: &SPoint, target: &SPoint, face_size: i64) {
+    let xd = exit.x - origin.x;
+    let yd = exit.y - origin.y;
+    exit.x = target.x + yd;
+    exit.y = target.y + ((face_size - xd) -1);        
+}
+
+fn move_side_right(exit: & mut SPoint, origin: &SPoint, target: &SPoint, face_size: i64) {
+    let xd = exit.x - origin.x;
+    let yd = exit.y - origin.y;
+    exit.x = target.x + ((face_size - yd) -1);
+    exit.y = target.y + xd;        
+}
+
+fn move_side_other(exit: & mut SPoint, origin: &SPoint, target: &SPoint, face_size: i64) {
+    let xd = exit.x - origin.x;
+    let yd = exit.y - origin.y;
+    exit.x = target.x + ((face_size - yd) -1);
+    exit.y = target.y + ((face_size - xd) -1);
+}
+
+struct Cube {
+    current: i64,
+    corners: Vec<SPoint>,
+    face_size: i64,
+}
+
+impl Cube {
+    pub fn from_map(m: &Map) -> Self{
+
+        let mut c = Self {
+            current: 0,
+            corners: Vec::new(),
+            face_size: std::cmp::max(m.width, m.height)/4,
+        };
+
+        if c.face_size == 4 {
+            c.corners.push( SPoint { x: c.face_size*2, y: 0 });
+            c.corners.push( SPoint { x: c.face_size*2, y: c.face_size });
+            c.corners.push( SPoint { x: c.face_size, y: c.face_size });
+            c.corners.push( SPoint { x: c.face_size*3, y: c.face_size*2 });
+            c.corners.push( SPoint { x: 0, y: c.face_size});
+            c.corners.push( SPoint { x: c.face_size*2, y: c.face_size*2 });
+        } else {
+            c.corners.push( SPoint { x: c.face_size, y: 0 });
+            c.corners.push( SPoint { x: c.face_size, y: c.face_size });
+            c.corners.push( SPoint { x: 0, y: c.face_size*2 });
+            c.corners.push( SPoint { x: c.face_size*2, y: 0 });
+            c.corners.push( SPoint { x: 0, y: c.face_size*3 });
+            c.corners.push( SPoint { x: c.face_size, y: c.face_size*2 });
+        }
+        c
+
+    }
+
+    fn get_face(&self, p: SPoint) -> i64 {
+        for i in 0..self.corners.len() {
+            if p.x >= self.corners[i].x && p.x < self.corners[i].x + self.face_size &&
+               p.y >= self.corners[i].y && p.y < self.corners[i].y + self.face_size {
+                return i as i64;
+               }
+        }
+        -1
+    }
+
+    fn jump_face(&self, p: SPoint, d: Direction) -> (i64, SPoint, Direction) {
+        if self.face_size == 4 {
+            match d {
+                Direction::Left => {
+                    match self.current {
+                        0 => {
+                            let mut np = p;
+                            move_side_left(& mut np, &self.corners[0], &self.corners[2], self.face_size);
+                            (2, np, d.rotate_left())
+                        },
+                        4 => {
+                            let mut np = p;
+                            move_side_right(& mut np, &self.corners[4], &self.corners[3], self.face_size);
+                            (3, np, d.rotate_left())
+                        },
+                        _ => { // 5
+                            let mut np = p;
+                            move_side_right(& mut np, &self.corners[5], &self.corners[2], self.face_size);
+                            (2, np, d.rotate_left())
+                        },
+                    }
+                },
+                Direction::Right => {
+                    match self.current {
+                        0 => {
+                            let mut np = p;
+                            move_side_other(& mut np, &self.corners[0], &self.corners[3], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        1 => {
+                            let mut np = p;
+                            move_side_right(& mut np, &self.corners[1], &self.corners[3], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        3 => {
+                            let mut np = p;
+                            move_side_other(& mut np, &self.corners[3], &self.corners[0], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                    }
+                },
+                Direction::Up => {
+                    match self.current {
+                        0 => {
+                            let mut np = p;
+                            move_side_other(np, &self.corners[0], &self.corners[4], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        2 => {
+                            let mut np = p;
+                            move_side_right(np, &self.corners[2], &self.corners[0], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        3 => {
+                            let mut np = p;
+                            move_side_left(np, &self.corners[3], &self.corners[1], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        4 => {
+                            let mut np = p;
+                            move_side_other(np, &self.corners[4], &self.corners[0], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                    }
+                },
+                Direction::Down => {
+                    match self.current {
+                        4 => {
+                            let mut np = p;
+                            move_side_other(np, &self.corners[4], &self.corners[5], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        2 => {
+                            let mut np = p;
+                            move_side_right(np, &self.corners[2], &self.corners[0], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        5 => {
+                            let mut np = p;
+                            move_side_left(np, &self.corners[3], &self.corners[1], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                        3 => {
+                            let mut np = p;
+                            move_side_other(np, &self.corners[4], &self.corners[0], self.face_size);
+                            (self.get_face(np), np, d.rotate_left())
+                        },
+                    }
+                },
+            }
+        } else {
+            match d {
+                Direction::Left => todo!(),
+                Direction::Right => todo!(),
+                Direction::Up => todo!(),
+                Direction::Down => todo!(),
+            }
+        }
+    }
+}
+
 struct Passcode {
     map: Map,
     instructions: Instructions,
