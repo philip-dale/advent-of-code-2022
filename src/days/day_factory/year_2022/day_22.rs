@@ -1,4 +1,4 @@
-use std::{error::Error};
+use std::{error::Error, cmp::max};
 use crate::input_reader;
 use crate::days::day_factory::Day;
 use crate::days::day_factory::types::DOUBLE_NEW_LINE;
@@ -12,6 +12,18 @@ pub struct SPoint {
     pub y: i64,
 }
 
+impl SPoint {
+    pub fn new(x: i64, y: i64) -> Self {
+        SPoint{x,y}
+    }
+}
+
+impl std::ops::AddAssign for SPoint {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
+}
 
 enum Instruction {
     Move(i64),
@@ -170,169 +182,73 @@ impl Direction {
 //25
 //4
 
-fn move_side_left(exit: & mut SPoint, origin: &SPoint, target: &SPoint, face_size: i64) {
-    let xd = exit.x - origin.x;
-    let yd = exit.y - origin.y;
-    exit.x = target.x + yd;
-    exit.y = target.y + ((face_size - xd) -1);        
+struct VoidMap {
+    m: HashMap<SPoint, (SPoint, i64)>,
 }
 
-fn move_side_right(exit: & mut SPoint, origin: &SPoint, target: &SPoint, face_size: i64) {
-    let xd = exit.x - origin.x;
-    let yd = exit.y - origin.y;
-    exit.x = target.x + ((face_size - yd) -1);
-    exit.y = target.y + xd;        
-}
+impl VoidMap {
+    pub fn add_map(& mut self, a: SPoint, b:SPoint, r:i64) {
+        self.m.insert(a, (b, r));
+        self.m.insert(b, (a, -r));
+    }
 
-fn move_side_other(exit: & mut SPoint, origin: &SPoint, target: &SPoint, face_size: i64) {
-    let xd = exit.x - origin.x;
-    let yd = exit.y - origin.y;
-    exit.x = target.x + ((face_size - yd) -1);
-    exit.y = target.y + ((face_size - xd) -1);
-}
+    pub fn add_range(& mut self, ain: &SPoint, ad: char, bin: &SPoint, bd: char, c: i64, r: i64) {
+        let mut a = *ain;
+        let mut b = *bin;
 
-struct Cube {
-    current: i64,
-    corners: Vec<SPoint>,
-    face_size: i64,
-}
-
-impl Cube {
-    pub fn from_map(m: &Map) -> Self{
-
-        let mut c = Self {
-            current: 0,
-            corners: Vec::new(),
-            face_size: std::cmp::max(m.width, m.height)/4,
+        let adelta = match ad {
+            'L' => SPoint{x: -1, y: 0},
+            'R' => SPoint{x: 1, y: 0},
+            'U' => SPoint{x: 0, y: -1},
+            _ => SPoint{x: 0, y: 1}, // D
         };
 
-        if c.face_size == 4 {
-            c.corners.push( SPoint { x: c.face_size*2, y: 0 });
-            c.corners.push( SPoint { x: c.face_size*2, y: c.face_size });
-            c.corners.push( SPoint { x: c.face_size, y: c.face_size });
-            c.corners.push( SPoint { x: c.face_size*3, y: c.face_size*2 });
-            c.corners.push( SPoint { x: 0, y: c.face_size});
-            c.corners.push( SPoint { x: c.face_size*2, y: c.face_size*2 });
-        } else {
-            c.corners.push( SPoint { x: c.face_size, y: 0 });
-            c.corners.push( SPoint { x: c.face_size, y: c.face_size });
-            c.corners.push( SPoint { x: 0, y: c.face_size*2 });
-            c.corners.push( SPoint { x: c.face_size*2, y: 0 });
-            c.corners.push( SPoint { x: 0, y: c.face_size*3 });
-            c.corners.push( SPoint { x: c.face_size, y: c.face_size*2 });
-        }
-        c
+        let bdelta = match bd {
+            'L' => SPoint{x: -1, y: 0},
+            'R' => SPoint{x: 1, y: 0},
+            'U' => SPoint{x: 0, y: -1},
+            _ => SPoint{x: 0, y: 1}, // D
+        };
 
+
+        for _i in 0..c {
+            self.add_map(a, b, r);
+            a += adelta;
+            b += bdelta;
+        }
     }
 
-    fn get_face(&self, p: SPoint) -> i64 {
-        for i in 0..self.corners.len() {
-            if p.x >= self.corners[i].x && p.x < self.corners[i].x + self.face_size &&
-               p.y >= self.corners[i].y && p.y < self.corners[i].y + self.face_size {
-                return i as i64;
-               }
-        }
-        -1
-    }
+    pub fn from_map(m: Map) -> Self {
+        let mut vm = Self {
+            m: HashMap::new(),
+        };
+        let face_size = max(m.width, m.height) / 4;
+        if face_size == 4 {
+            // sample
+            //side 0
+            vm.add_range(&SPoint::new(face_size*2, 0), 'D', &SPoint::new(face_size, face_size), 'R', face_size, -1);
+            vm.add_range(&SPoint::new(face_size*2, 0), 'R', &SPoint::new(face_size-1, face_size), 'L', face_size, -2);
+            vm.add_range(&SPoint::new((face_size*3) - 1, 0), 'D', &SPoint::new((face_size*4) - 1, (face_size*3) - 1), 'U', face_size, -2);
 
-    fn jump_face(&self, p: SPoint, d: Direction) -> (i64, SPoint, Direction) {
-        if self.face_size == 4 {
-            match d {
-                Direction::Left => {
-                    match self.current {
-                        0 => {
-                            let mut np = p;
-                            move_side_left(& mut np, &self.corners[0], &self.corners[2], self.face_size);
-                            (2, np, d.rotate_left())
-                        },
-                        4 => {
-                            let mut np = p;
-                            move_side_right(& mut np, &self.corners[4], &self.corners[3], self.face_size);
-                            (3, np, d.rotate_left())
-                        },
-                        _ => { // 5
-                            let mut np = p;
-                            move_side_right(& mut np, &self.corners[5], &self.corners[2], self.face_size);
-                            (2, np, d.rotate_left())
-                        },
-                    }
-                },
-                Direction::Right => {
-                    match self.current {
-                        0 => {
-                            let mut np = p;
-                            move_side_other(& mut np, &self.corners[0], &self.corners[3], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        1 => {
-                            let mut np = p;
-                            move_side_right(& mut np, &self.corners[1], &self.corners[3], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        3 => {
-                            let mut np = p;
-                            move_side_other(& mut np, &self.corners[3], &self.corners[0], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                    }
-                },
-                Direction::Up => {
-                    match self.current {
-                        0 => {
-                            let mut np = p;
-                            move_side_other(np, &self.corners[0], &self.corners[4], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        2 => {
-                            let mut np = p;
-                            move_side_right(np, &self.corners[2], &self.corners[0], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        3 => {
-                            let mut np = p;
-                            move_side_left(np, &self.corners[3], &self.corners[1], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        4 => {
-                            let mut np = p;
-                            move_side_other(np, &self.corners[4], &self.corners[0], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                    }
-                },
-                Direction::Down => {
-                    match self.current {
-                        4 => {
-                            let mut np = p;
-                            move_side_other(np, &self.corners[4], &self.corners[5], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        2 => {
-                            let mut np = p;
-                            move_side_right(np, &self.corners[2], &self.corners[0], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        5 => {
-                            let mut np = p;
-                            move_side_left(np, &self.corners[3], &self.corners[1], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                        3 => {
-                            let mut np = p;
-                            move_side_other(np, &self.corners[4], &self.corners[0], self.face_size);
-                            (self.get_face(np), np, d.rotate_left())
-                        },
-                    }
-                },
-            }
+            // side 1
+            vm.add_range(&SPoint::new((face_size*3) - 1, face_size), 'D', &SPoint::new((face_size*4) - 1, face_size*2), 'L', face_size, 1);
+
+            //side 2
+            vm.add_range(&SPoint::new((face_size*2) - 1, (face_size*2) - 1), 'L', &SPoint::new(face_size*2, face_size*2), 'D', face_size, -1);
+
+            // side 3
+            vm.add_range(&SPoint::new(face_size*3, (face_size*3) - 1), 'R', &SPoint::new(0, (face_size*2) - 1), 'U', face_size, -1);
+
+            // side 4
+            vm.add_range(&SPoint::new(0, (face_size*2) - 1), 'R', &SPoint::new((face_size*3) - 1, (face_size*3) - 1), 'U', face_size, -2);
+
+
         } else {
-            match d {
-                Direction::Left => todo!(),
-                Direction::Right => todo!(),
-                Direction::Up => todo!(),
-                Direction::Down => todo!(),
-            }
+            //actual
         }
+
+
+        vm
     }
 }
 
@@ -341,6 +257,7 @@ struct Passcode {
     instructions: Instructions,
     position: SPoint,
     direction: Direction,
+    void_map: VoidMap,
 }
 
 impl Passcode {
@@ -353,7 +270,7 @@ impl Passcode {
         }   
     }
 
-    fn move_pos_hori(& mut self, distance: i64) {
+    fn move_pos_hori(& mut self, distance: i64, use_void_map: bool) {
         let mut d = 0;
         let mut temp_pos = self.position;
         let mut next_point = temp_pos;
@@ -366,25 +283,52 @@ impl Passcode {
                 next_point.x -= 1;
             }
             
-            if next_point.x > self.map.width {
-                next_point.x = 0;
+            if use_void_map {
+                match self.map.get(next_point.x, next_point.y) {
+                    CellType::Space => temp_pos = next_point,
+                    CellType::Wall => break,
+                    CellType::Void => {
+                        let (jump_point, r) = self.void_map.m.get(&temp_pos).unwrap();
+                        self.position = *jump_point;
+                        // TODO need to deal with jump point being a wall!
+                        for _c in 0..r.abs() {
+                            if *r > 0 {
+                                self.direction.rotate_rigth();
+                            } else {
+                                self.direction.rotate_left();
+                            }
+                        }
+                        let new_d = if distance > 0{
+                            d-1
+                        } else {
+                            (-d) + 1
+                        };
+                        self.move_pos(new_d, use_void_map);
+                        return;
+                    },
+                }
+            } else {
+                if next_point.x > self.map.width {
+                    next_point.x = 0;
+                }
+    
+                if next_point.x < 0 {
+                    next_point.x = self.map.width - 1;
+                }
+    
+                match self.map.get(next_point.x, next_point.y) {
+                    CellType::Space => temp_pos = next_point,
+                    CellType::Wall => break,
+                    CellType::Void => continue,
+                }
             }
-
-            if next_point.x < 0 {
-                next_point.x = self.map.width - 1;
-            }
-
-            match self.map.get(next_point.x, next_point.y) {
-                CellType::Space => temp_pos = next_point,
-                CellType::Wall => break,
-                CellType::Void => continue,
-            }
+            
             d += 1;
         }
         self.position = temp_pos;
     }
 
-    fn move_pos_virt(& mut self, distance: i64) {
+    fn move_pos_virt(& mut self, distance: i64, use_void_map: bool) {
         let mut d = 0;
         let mut temp_pos = self.position;
         let mut next_point = temp_pos;
@@ -396,47 +340,74 @@ impl Passcode {
                 next_point.y -= 1;
             }
             
-            if next_point.y > self.map.height {
-                next_point.y = 0;
-            }
-            
-            if next_point.y < 0 {
-                next_point.y = self.map.height - 1;
-            }
+            if use_void_map {
+                match self.map.get(next_point.x, next_point.y) {
+                    CellType::Space => temp_pos = next_point,
+                    CellType::Wall => break,
+                    CellType::Void => {
+                        let (jump_point, r) = self.void_map.m.get(&temp_pos).unwrap();
+                        next_point = *jump_point;
+                        temp_pos = *jump_point;
+                        for _c in 0..r.abs() {
+                            if *r > 0 {
+                                self.direction.rotate_rigth();
+                            } else {
+                                self.direction.rotate_left();
+                            }
+                        }
+                        let new_d = if distance > 0{
+                            d-1
+                        } else {
+                            (-d) + 1
+                        };
+                        self.move_pos(new_d, use_void_map);
+                        return;
+                    },
+                }
+            } else {
 
-            match self.map.get(next_point.x, next_point.y) {
-                CellType::Space => temp_pos = next_point,
-                CellType::Wall => break,
-                CellType::Void => continue,
+                if next_point.y > self.map.height {
+                    next_point.y = 0;
+                }
+                
+                if next_point.y < 0 {
+                    next_point.y = self.map.height - 1;
+                }
+
+                match self.map.get(next_point.x, next_point.y) {
+                    CellType::Space => temp_pos = next_point,
+                    CellType::Wall => break,
+                    CellType::Void => continue,
+                }
             }
             d += 1;
         }
         self.position = temp_pos;
     }
 
-    fn move_pos(& mut self, d: i64) {
+    fn move_pos(& mut self, d: i64, use_void_map: bool) {
         match self.direction {
-            Direction::Left => self.move_pos_hori(-d),
-            Direction::Right => self.move_pos_hori(d),
-            Direction::Up => self.move_pos_virt(-d),
-            Direction::Down => self.move_pos_virt(d),
+            Direction::Left => self.move_pos_hori(-d, use_void_map),
+            Direction::Right => self.move_pos_hori(d, use_void_map),
+            Direction::Up => self.move_pos_virt(-d, use_void_map),
+            Direction::Down => self.move_pos_virt(d, use_void_map),
         }
     }
 
-    fn apply_instruction(& mut self, i:usize) {
+    fn apply_instruction(& mut self, i:usize, use_void_map: bool) {
         match self.instructions.i[i] {
-            Instruction::Move(x) => self.move_pos(x),
+            Instruction::Move(x) => self.move_pos(x, use_void_map),
             Instruction::Rotate(x) => self.direction = self.direction.rotate(x),
         }
     }
 
-    pub fn apply_instructions(& mut self) {
-        // println!("Start Point");
-        // self.print();
+    pub fn apply_instructions(& mut self, use_void_map: bool) {
+        println!("Start Point");
+        self.print();
         for i in 0..self.instructions.i.len() {
-            self.apply_instruction(i);
+            self.apply_instruction(i, use_void_map);
             // println!("After {} of {}", i, self.instructions.i.len());
-            // self.print();
+            self.print();
         }
     }
     #[allow(dead_code)]
@@ -444,7 +415,13 @@ impl Passcode {
         for y in 0..self.map.height {
             for x in 0..self.map.width {
                 if self.position == (SPoint{x,y}) {
-                    print!("*");
+                    match self.direction {
+                        Direction::Left => print!("<"),
+                        Direction::Right => print!(">"),
+                        Direction::Up => print!("^"),
+                        Direction::Down => print!("V"),
+                    };
+                    
                 } else {
                     match self.map.get(x, y) {
                         CellType::Space => print!("."),
@@ -473,6 +450,7 @@ impl std::str::FromStr for Passcode {
             instructions: split[1].parse()?,
             position: SPoint { x: 0, y: 0 },
             direction: Direction::Right,
+            void_map: VoidMap::from_map(split[0].parse()?),
         };
         pc.set_start_point();
         Ok(pc)
@@ -484,12 +462,15 @@ pub struct Day22{}
 impl Day for Day22 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let mut game:Passcode = ipr.whole()?;
-        game.apply_instructions();
+        game.apply_instructions(false);
         let code = game.get_code();
         Ok(code.to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
-        Ok(ipr.fullname()?)
+        let mut game:Passcode = ipr.whole()?;
+        game.apply_instructions(true);
+        let code = game.get_code();
+        Ok(code.to_string())
     }
 }
