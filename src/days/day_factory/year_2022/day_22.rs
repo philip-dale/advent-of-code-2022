@@ -130,6 +130,16 @@ enum Direction {
 }
 
 impl Direction {
+    #[allow(dead_code)]
+    pub fn to_char(&self) -> char {
+        match self {
+            Self::Left => 'L',
+            Self::Right => 'R',
+            Self::Up => 'U',
+            Self::Down => 'D',
+        }
+    }
+
     pub fn rotate(&self, i:char) -> Self {
         match i {
             'L' => self.rotate_left(),
@@ -229,18 +239,14 @@ impl VoidMap {
             vm.add_range(&SPoint::new(face_size*2, 0), 'D', &SPoint::new(face_size, face_size), 'R', face_size, -1);
             vm.add_range(&SPoint::new(face_size*2, 0), 'R', &SPoint::new(face_size-1, face_size), 'L', face_size, -2);
             vm.add_range(&SPoint::new((face_size*3) - 1, 0), 'D', &SPoint::new((face_size*4) - 1, (face_size*3) - 1), 'U', face_size, -2);
-
             // side 1
             vm.add_range(&SPoint::new((face_size*3) - 1, face_size), 'D', &SPoint::new((face_size*4) - 1, face_size*2), 'L', face_size, 1);
-
             //side 2
             vm.add_range(&SPoint::new((face_size*2) - 1, (face_size*2) - 1), 'L', &SPoint::new(face_size*2, face_size*2), 'D', face_size, -1);
-
             // side 3
             vm.add_range(&SPoint::new(face_size*3, (face_size*3) - 1), 'R', &SPoint::new(0, (face_size*2) - 1), 'U', face_size, -1);
-
             // side 4
-            vm.add_range(&SPoint::new(0, (face_size*2) - 1), 'R', &SPoint::new((face_size*3) - 1, (face_size*3) - 1), 'U', face_size, -2);
+            vm.add_range(&SPoint::new(0, (face_size*2) - 1), 'R', &SPoint::new((face_size*3) - 1, (face_size*3) - 1), 'L', face_size, -2);
 
 
         } else {
@@ -289,19 +295,23 @@ impl Passcode {
                     CellType::Wall => break,
                     CellType::Void => {
                         let (jump_point, r) = self.void_map.m.get(&temp_pos).unwrap();
+                        if *self.map.get(jump_point.x,  jump_point.y) == CellType::Wall {
+                            break;
+                        }
+                        // println!("r {}, {}", r, self.direction.to_char());
                         self.position = *jump_point;
-                        // TODO need to deal with jump point being a wall!
                         for _c in 0..r.abs() {
-                            if *r > 0 {
-                                self.direction.rotate_rigth();
+                            self.direction = if *r > 0 {
+                                self.direction.rotate_rigth()
                             } else {
-                                self.direction.rotate_left();
+                                self.direction.rotate_left()
                             }
                         }
+                        // println!("d {}, {}", d, self.direction.to_char());
                         let new_d = if distance > 0{
-                            d-1
+                            (distance - d) - 1
                         } else {
-                            (-d) + 1
+                            (distance + d) + 1
                         };
                         self.move_pos(new_d, use_void_map);
                         return;
@@ -346,19 +356,21 @@ impl Passcode {
                     CellType::Wall => break,
                     CellType::Void => {
                         let (jump_point, r) = self.void_map.m.get(&temp_pos).unwrap();
-                        next_point = *jump_point;
-                        temp_pos = *jump_point;
+                        if *self.map.get(jump_point.x,  jump_point.y) == CellType::Wall {
+                            break;
+                        }
+                        self.position = *jump_point;
                         for _c in 0..r.abs() {
-                            if *r > 0 {
-                                self.direction.rotate_rigth();
+                            self.direction = if *r > 0 {
+                                self.direction.rotate_rigth()
                             } else {
-                                self.direction.rotate_left();
+                                self.direction.rotate_left()
                             }
                         }
                         let new_d = if distance > 0{
-                            d-1
+                            (distance - d) - 1
                         } else {
-                            (-d) + 1
+                            (distance + d) + 1
                         };
                         self.move_pos(new_d, use_void_map);
                         return;
@@ -386,6 +398,7 @@ impl Passcode {
     }
 
     fn move_pos(& mut self, d: i64, use_void_map: bool) {
+        // println!("{}, {}", d, self.direction.to_char());
         match self.direction {
             Direction::Left => self.move_pos_hori(-d, use_void_map),
             Direction::Right => self.move_pos_hori(d, use_void_map),
@@ -395,6 +408,7 @@ impl Passcode {
     }
 
     fn apply_instruction(& mut self, i:usize, use_void_map: bool) {
+        
         match self.instructions.i[i] {
             Instruction::Move(x) => self.move_pos(x, use_void_map),
             Instruction::Rotate(x) => self.direction = self.direction.rotate(x),
@@ -402,12 +416,12 @@ impl Passcode {
     }
 
     pub fn apply_instructions(& mut self, use_void_map: bool) {
-        println!("Start Point");
-        self.print();
+        // println!("Start Point");
+        // self.print();
         for i in 0..self.instructions.i.len() {
             self.apply_instruction(i, use_void_map);
             // println!("After {} of {}", i, self.instructions.i.len());
-            self.print();
+            // self.print();
         }
     }
     #[allow(dead_code)]
