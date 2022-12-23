@@ -74,7 +74,6 @@ impl Phase {
 
     pub fn get_check_points_inc(&self, p: &SPoint, phase_inc: i64) -> Vec<SPoint> {
         let check = (self.current + phase_inc) % 4;
-        
         match check {
             0 => p.get_north(),
             1 => p.get_south(),
@@ -85,7 +84,6 @@ impl Phase {
 
     pub fn get_delta(&self, phase_inc: i64) -> SPoint {
         let check = (self.current + phase_inc) % 4;
-        
         match check {
             0 => SPoint{x: 0, y: -1},
             1 => SPoint{x: 0, y: 1},
@@ -104,25 +102,12 @@ struct Planting {
 
 impl Planting {
     pub fn add_elf(& mut self, x: i64, y: i64) {
-        if self.max.x < x {
-            self.max.x = x;
-        }
-        if self.min.x > x {
-            self.min.x = x;
-        }
-        if self.max.y < y {
-            self.max.y = y;
-        }
-        if self.min.y > y {
-            self.min.y = y;
-        }
-
         self.elves.insert(SPoint{x, y});
     }
 
     pub fn take_turn(& mut self) -> bool {
         let mut elf_moved = false;
-        let mut proposed: HashMap<SPoint, i64> = HashMap::new();
+        let mut proposed: HashMap<SPoint, (i64, SPoint)> = HashMap::new();
         for e in &self.elves{
             // Check for any neighbours
             let mut has_neighbour = false;
@@ -147,59 +132,22 @@ impl Planting {
                 }
                 
                 if !has_neighbour {
-                    
                     let delta = self.phase.get_delta(test);
-                    proposed.entry(SPoint{x: e.x + delta.x, y: e.y + delta.y}).and_modify(|c| *c += 1).or_insert(1);
+                    proposed.entry(SPoint{x: e.x + delta.x, y: e.y + delta.y}).and_modify(|c| c.0 += 1).or_insert((1, *e));
                     break;
                 }
             }
             
         }
-        // need to do move only if there are no conflicts
-        let mut to_remove: Vec<SPoint> = Vec::new();
-        let mut to_add: Vec<SPoint> = Vec::new();
-        for e in &self.elves{
-            // Check for any neighbours
-            let mut has_neighbour = false;
-            for p in e.get_all_neighbours() {
-                if self.elves.contains(&p) {
-                    has_neighbour = true;
-                    break;
-                }
-            }
 
-            if !has_neighbour {
-                continue;
-            }
-
-            for test in 0..4 {
-                let mut has_neighbour = false;
-                for points in self.phase.get_check_points_inc(e, test) {
-                    if self.elves.contains(&points) {
-                        has_neighbour = true;
-                        break;
-                    }
-                }
-                if !has_neighbour {
-                    let delta = self.phase.get_delta(test);
-                    if *proposed.get(&SPoint{x: e.x + delta.x, y: e.y + delta.y}).unwrap() < 2 {
-                        to_remove.push(*e);
-                        to_add.push(SPoint{x: e.x + delta.x, y: e.y + delta.y});
-                        elf_moved = true;
-                    }
-                    break;
-                }
+        for e in proposed {
+            if e.1.0 < 2 {
+                self.elves.remove(&e.1.1);
+                self.add_elf(e.0.x, e.0.y);
+                elf_moved = true;
             }
         }
-        for p in to_remove {
-            self.elves.remove(&p);
-        }
-        for p in to_add {
-            self.add_elf(p.x, p.y);
-        }
-        self.update_min_max();
         elf_moved
-        // may need to reduce min and max
     }
 
     fn update_min_max(& mut self) {
@@ -229,7 +177,8 @@ impl Planting {
     }
 
     #[allow(dead_code)]
-    pub fn print(&self) {
+    pub fn print(& mut self) {
+        self.update_min_max();
         for y in self.min.y..self.max.y + 1 {
             print!("{}", y);
             for x in self.min.x..self.max.x + 1 {
@@ -244,7 +193,8 @@ impl Planting {
         println!();
     }
 
-    pub fn get_score(&self) -> i64{
+    pub fn get_score(& mut self) -> i64{
+        self.update_min_max();
         ((self.max.x - self.min.x + 1) * (self.max.y - self.min.y + 1)) - self.elves.len() as i64
     }
 }
@@ -267,7 +217,7 @@ impl std::str::FromStr for Planting {
                 }
             }
         }
-
+        p.update_min_max();
         Ok(p)
     }
 }
