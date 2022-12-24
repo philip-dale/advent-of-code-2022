@@ -122,6 +122,7 @@ impl std::str::FromStr for Map {
     }
 }
 
+#[derive(Clone, Copy)]
 enum Direction {
     Left,
     Right,
@@ -131,7 +132,7 @@ enum Direction {
 
 impl Direction {
     #[allow(dead_code)]
-    pub fn to_char(&self) -> char {
+    pub fn as_char(&self) -> char {
         match self {
             Self::Left => 'L',
             Self::Right => 'R',
@@ -193,16 +194,16 @@ impl Direction {
 //4
 
 struct VoidMap {
-    m: HashMap<SPoint, (SPoint, i64)>,
+    m: HashMap<(SPoint, char), (SPoint, i64)>,
 }
 
 impl VoidMap {
-    pub fn add_map(& mut self, a: SPoint, b:SPoint, r:i64) {
-        self.m.insert(a, (b, r));
-        self.m.insert(b, (a, -r));
+    pub fn add_map(& mut self, a: SPoint, a_dir: char, b:SPoint, b_dir: char, r:i64,) {
+        self.m.insert((a, a_dir), (b, r));
+        self.m.insert((b, b_dir), (a, -r));
     }
 
-    pub fn add_range(& mut self, ain: &SPoint, ad: char, bin: &SPoint, bd: char, c: i64, r: i64) {
+    pub fn add_range(& mut self, ain: &SPoint, ad: char, a_dir: char, bin: &SPoint, bd: char, b_dir: char, c: i64, r: i64) {
         let mut a = *ain;
         let mut b = *bin;
 
@@ -222,7 +223,7 @@ impl VoidMap {
 
 
         for _i in 0..c {
-            self.add_map(a, b, r);
+            self.add_map(a, a_dir, b, b_dir, r);
             a += adelta;
             b += bdelta;
         }
@@ -236,21 +237,39 @@ impl VoidMap {
         if face_size == 4 {
             // sample
             //side 0
-            vm.add_range(&SPoint::new(face_size*2, 0), 'D', &SPoint::new(face_size, face_size), 'R', face_size, -1);
-            vm.add_range(&SPoint::new(face_size*2, 0), 'R', &SPoint::new(face_size-1, face_size), 'L', face_size, -2);
-            vm.add_range(&SPoint::new((face_size*3) - 1, 0), 'D', &SPoint::new((face_size*4) - 1, (face_size*3) - 1), 'U', face_size, -2);
+            vm.add_range(&SPoint::new((face_size*2)-1, 0), 'D', 'L', &SPoint::new(face_size, face_size-1), 'R', 'U', face_size, -1);
+            vm.add_range(&SPoint::new(face_size*2, -1), 'R', 'U', &SPoint::new(face_size-1, face_size-1), 'L', 'U', face_size, -2);
+            vm.add_range(&SPoint::new(face_size*3, 0), 'D', 'R', &SPoint::new(face_size*4, (face_size*3) - 1), 'U', 'R', face_size, -2);
             // side 1
-            vm.add_range(&SPoint::new((face_size*3) - 1, face_size), 'D', &SPoint::new((face_size*4) - 1, face_size*2), 'L', face_size, 1);
+            vm.add_range(&SPoint::new(face_size*3, face_size), 'D', 'R', &SPoint::new((face_size*4) - 1, (face_size*2)-1), 'L', 'U', face_size, 1);
             //side 2
-            vm.add_range(&SPoint::new((face_size*2) - 1, (face_size*2) - 1), 'L', &SPoint::new(face_size*2, face_size*2), 'D', face_size, -1);
+            vm.add_range(&SPoint::new((face_size*2) - 1, face_size*2), 'L', 'D', &SPoint::new((face_size*2) - 1, face_size*2), 'D', 'L', face_size, -1);
             // side 3
-            vm.add_range(&SPoint::new(face_size*3, (face_size*3) - 1), 'R', &SPoint::new(0, (face_size*2) - 1), 'U', face_size, -1);
+            vm.add_range(&SPoint::new(face_size*3, face_size*3), 'R', 'D', &SPoint::new(-1, (face_size*2) - 1), 'U', 'L', face_size, -1);
             // side 4
-            vm.add_range(&SPoint::new(0, (face_size*2) - 1), 'R', &SPoint::new((face_size*3) - 1, (face_size*3) - 1), 'L', face_size, -2);
+            vm.add_range(&SPoint::new(0, face_size*2), 'R', 'D', &SPoint::new((face_size*3) - 1, face_size*3), 'L', 'D', face_size, -2);
 
 
         } else {
             //actual
+            // side 0
+            vm.add_range(&SPoint::new(face_size-1, 0), 'D', 'L', &SPoint::new(-1, (face_size* 3) - 1), 'U', 'L', face_size, 2);
+            vm.add_range(&SPoint::new(face_size, -1), 'R', 'U', &SPoint::new(-1, face_size* 3), 'D', 'L', face_size, 1);
+            //  side 1
+            vm.add_range(&SPoint::new(face_size-1, face_size), 'D', 'L', &SPoint::new(0, (face_size* 2) - 1), 'R', 'U', face_size, -1);
+            vm.add_range(&SPoint::new(face_size*2, face_size), 'D', 'R', &SPoint::new(face_size*2, face_size), 'R', 'D', face_size, -1);
+            // side 2
+            
+
+            // side 3
+            vm.add_range(&SPoint::new(face_size*2, -1), 'R', 'U', &SPoint::new(0, face_size*4), 'R', 'D', face_size, 0);
+            vm.add_range(&SPoint::new(face_size*3, 0), 'D', 'R', &SPoint::new(face_size*2, (face_size*3 )- 1), 'U', 'R', face_size, -2);
+            
+
+            // side 4?
+            vm.add_range(&SPoint::new(face_size, face_size*3), 'D', 'R', &SPoint::new(face_size, face_size*3), 'R', 'D', face_size, -1);
+            
+
         }
 
 
@@ -264,6 +283,7 @@ struct Passcode {
     position: SPoint,
     direction: Direction,
     void_map: VoidMap,
+    path: HashMap<SPoint, Direction>,
 }
 
 impl Passcode {
@@ -282,7 +302,7 @@ impl Passcode {
         let mut next_point = temp_pos;
 
         while d < distance.abs() {
-            
+            self.path.insert(temp_pos, self.direction);
             if distance > 0{
                 next_point.x += 1;
             } else {
@@ -294,26 +314,47 @@ impl Passcode {
                     CellType::Space => temp_pos = next_point,
                     CellType::Wall => break,
                     CellType::Void => {
-                        let (jump_point, r) = self.void_map.m.get(&temp_pos).unwrap();
+                        let (mut jump_point, r) = self.void_map.m.get(&(next_point, self.direction.as_char())).unwrap();
+
+                        let mut new_r = self.direction;
+                        for _c in 0..r.abs() {
+                            new_r = if *r > 0 {
+                                new_r.rotate_rigth()
+                            } else {
+                                new_r.rotate_left()
+                            }
+                        }
+
+                        jump_point += match new_r.as_char() {
+                            'L' => SPoint{x: -1, y: 0},
+                            'R' => SPoint{x: 1, y: 0},
+                            'U' => SPoint{x: 0, y: -1},
+                            _ => SPoint{x: 0, y: 1}, // D
+                        };
+
+
                         if *self.map.get(jump_point.x,  jump_point.y) == CellType::Wall {
                             break;
                         }
                         // println!("r {}, {}", r, self.direction.to_char());
-                        self.position = *jump_point;
-                        for _c in 0..r.abs() {
-                            self.direction = if *r > 0 {
-                                self.direction.rotate_rigth()
-                            } else {
-                                self.direction.rotate_left()
-                            }
-                        }
+                        println!("Jumping from {},{} to {},{}", next_point.x, next_point.y, jump_point.x, jump_point.y);
+                        // self.print();
+                        self.position = jump_point;
+                        self.direction = new_r;
+                        // for _c in 0..r.abs() {
+                        //     self.direction = if *r > 0 {
+                        //         self.direction.rotate_rigth()
+                        //     } else {
+                        //         self.direction.rotate_left()
+                        //     }
+                        // }
                         // println!("d {}, {}", d, self.direction.to_char());
                         let new_d = if distance > 0{
                             (distance - d) - 1
                         } else {
                             (distance + d) + 1
                         };
-                        self.move_pos(new_d, use_void_map);
+                        self.move_pos(new_d.abs(), use_void_map);
                         return;
                     },
                 }
@@ -335,6 +376,7 @@ impl Passcode {
             
             d += 1;
         }
+        self.path.insert(temp_pos, self.direction);
         self.position = temp_pos;
     }
 
@@ -344,6 +386,7 @@ impl Passcode {
         let mut next_point = temp_pos;
         
         while d < distance.abs() {
+            self.path.insert(temp_pos, self.direction);
             if distance > 0{
                 next_point.y += 1;
             } else {
@@ -355,24 +398,46 @@ impl Passcode {
                     CellType::Space => temp_pos = next_point,
                     CellType::Wall => break,
                     CellType::Void => {
-                        let (jump_point, r) = self.void_map.m.get(&temp_pos).unwrap();
+                        println!("{},{}", temp_pos.x, temp_pos.y);
+                        println!("{},{}", next_point.x, next_point.y);
+                        let (mut jump_point, r) = self.void_map.m.get(&(next_point, self.direction.as_char())).unwrap();
+
+                        let mut new_r = self.direction;
+                        for _c in 0..r.abs() {
+                            new_r = if *r > 0 {
+                                new_r.rotate_rigth()
+                            } else {
+                                new_r.rotate_left()
+                            }
+                        }
+
+                        jump_point += match new_r.as_char() {
+                            'L' => SPoint{x: -1, y: 0},
+                            'R' => SPoint{x: 1, y: 0},
+                            'U' => SPoint{x: 0, y: -1},
+                            _ => SPoint{x: 0, y: 1}, // D
+                        };
+
                         if *self.map.get(jump_point.x,  jump_point.y) == CellType::Wall {
                             break;
                         }
-                        self.position = *jump_point;
-                        for _c in 0..r.abs() {
-                            self.direction = if *r > 0 {
-                                self.direction.rotate_rigth()
-                            } else {
-                                self.direction.rotate_left()
-                            }
-                        }
+                        println!("Jumping from {},{} to {},{}", next_point.x, next_point.y, jump_point.x, jump_point.y);
+                        // self.print();
+                        self.position = jump_point;
+                        self.direction = new_r;
+                        // for _c in 0..r.abs() {
+                        //     self.direction = if *r > 0 {
+                        //         self.direction.rotate_rigth()
+                        //     } else {
+                        //         self.direction.rotate_left()
+                        //     }
+                        // }
                         let new_d = if distance > 0{
                             (distance - d) - 1
                         } else {
                             (distance + d) + 1
                         };
-                        self.move_pos(new_d, use_void_map);
+                        self.move_pos(new_d.abs(), use_void_map);
                         return;
                     },
                 }
@@ -394,11 +459,12 @@ impl Passcode {
             }
             d += 1;
         }
+        self.path.insert(temp_pos, self.direction);
         self.position = temp_pos;
     }
 
     fn move_pos(& mut self, d: i64, use_void_map: bool) {
-        // println!("{}, {}", d, self.direction.to_char());
+        println!("{}, {}", d, self.direction.as_char());
         match self.direction {
             Direction::Left => self.move_pos_hori(-d, use_void_map),
             Direction::Right => self.move_pos_hori(d, use_void_map),
@@ -411,7 +477,11 @@ impl Passcode {
         
         match self.instructions.i[i] {
             Instruction::Move(x) => self.move_pos(x, use_void_map),
-            Instruction::Rotate(x) => self.direction = self.direction.rotate(x),
+            Instruction::Rotate(x) => {
+                
+                self.direction = self.direction.rotate(x);
+                self.path.insert(self.position, self.direction);
+            },
         }
     }
 
@@ -421,15 +491,21 @@ impl Passcode {
         for i in 0..self.instructions.i.len() {
             self.apply_instruction(i, use_void_map);
             // println!("After {} of {}", i, self.instructions.i.len());
-            // self.print();
+            self.print();
         }
+        // self.print();
     }
     #[allow(dead_code)]
     pub fn print(&self) {
-        for y in 0..self.map.height {
-            for x in 0..self.map.width {
-                if self.position == (SPoint{x,y}) {
-                    match self.direction {
+        for y in -1..self.map.height+1 {
+            print!("{}", y);
+            for x in -1..self.map.width+1 {
+                // if self.void_map.m.contains_key(&SPoint{x,y}) {
+                //     print!("O")
+                // } else 
+                if self.path.contains_key(&SPoint{x,y}) {
+                    let d = self.path.get(&SPoint{x,y}).unwrap();
+                    match d {
                         Direction::Left => print!("<"),
                         Direction::Right => print!(">"),
                         Direction::Up => print!("^"),
@@ -465,6 +541,7 @@ impl std::str::FromStr for Passcode {
             position: SPoint { x: 0, y: 0 },
             direction: Direction::Right,
             void_map: VoidMap::from_map(split[0].parse()?),
+            path: HashMap::new(),
         };
         pc.set_start_point();
         Ok(pc)
