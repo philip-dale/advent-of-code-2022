@@ -203,6 +203,7 @@ impl VoidMap {
         self.m.insert((b, b_dir), (a, -r));
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn add_range(& mut self, ain: &SPoint, ad: char, a_dir: char, bin: &SPoint, bd: char, b_dir: char, c: i64, r: i64) {
         let mut a = *ain;
         let mut b = *bin;
