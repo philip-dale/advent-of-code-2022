@@ -168,7 +168,7 @@ impl Board {
 
     pub fn add_shape(&mut self, shape: &Shape) {
         for p in shape.get_points() {
-            self.points.insert(p.clone());
+            self.points.insert(p);
         }
         if shape.top() + 1 > self.height {
             self.height = shape.top() + 1;

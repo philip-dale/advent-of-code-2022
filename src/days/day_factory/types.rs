@@ -140,7 +140,7 @@ impl std::str::FromStr for BingoBoard {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
@@ -221,6 +221,44 @@ impl Point {
             }
             n.push(Self{x:self.x, y});
         }
+        n
+
+    }
+
+    pub fn get_adjacent_neighbours_min(&self, x_max_value: usize, y_max_value: usize, x_min_value: usize, y_min_value: usize) -> Vec<Self> {
+        let x_range = match self.x {
+            x if x > x_min_value && x < x_max_value => self.x-1..self.x+2,
+            x if x == x_min_value => self.x..self.x+2,
+            x if x == x_max_value => self.x-1..self.x+1,
+            _ => 0..0
+        };
+
+        let y_range = match self.y {
+            y if y > y_min_value && y < y_max_value => self.y-1..self.y+2,
+            y if y == y_min_value => self.y..self.y+2,
+            y if y == y_max_value => self.y-1..self.y+1,
+            _ => 0..0
+        };
+
+        let mut n:Vec<Self> = Vec::new();
+        if self.y >= y_min_value {
+            for x in x_range {
+                if x == self.x {
+                    continue;
+                }
+                n.push(Self{x, y: self.y});
+            }
+        }
+
+        if self.x >= x_min_value {
+            for y in y_range {
+                if y == self.y {
+                    continue;
+                }
+                n.push(Self{x:self.x, y});
+            }
+        }
+
         n
 
     }
