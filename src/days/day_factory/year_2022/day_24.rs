@@ -153,29 +153,25 @@ impl Crossing {
         crossing
     }
 
-    pub fn run(&self, start_in: Point, end_in: Point, reverse: bool, wind_offset: usize) -> usize {
+    pub fn run(&self, reverse: bool, wind_offset: usize) -> usize {
 
         let (start, end) = if reverse {
-            (end_in, Point{x: start_in.x, y: start_in.y+1})
+            (self.end, Point{x: self.start.x, y: self.start.y+1})
         } else {
-            (start_in, Point{x: end_in.x, y: end_in.y-1})
+            (self.start, Point{x: self.end.x, y: self.end.y-1})
         };
 
         let state = (start.as_point(), wind_offset);
-
         let mut state_queue: VecDeque<(Point, usize)> = VecDeque::new();
         state_queue.push_back(state);
 
         let mut seen: HashSet<(Point, usize)> = HashSet::new();
         seen.insert(state);
+
         let mut best = usize::MAX;
 
         while !state_queue.is_empty() {
             let (pos, time) = state_queue.pop_front().unwrap();
-
-            if time >= best {
-                continue;
-            }
 
             if pos == end && time < best {
                 best = time - wind_offset;
@@ -183,15 +179,6 @@ impl Crossing {
             }
             
             let mut neighbours = pos.get_adjacent_neighbours_min(self.max_x, self.max_y, self.min_x, self.min_y);
-
-            if pos == start{ // this is a hack
-                if reverse {
-                    neighbours.push(Point { x: pos.x, y: pos.y - 1 });
-                } else {
-                    neighbours.push(Point { x: pos.x, y: pos.y + 1 });
-                }
-                
-            }
 
             neighbours.push(pos);
             for n in neighbours {
@@ -215,16 +202,16 @@ impl Day for Day24 {
     fn run1(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let wind_map: WindMap = ipr.whole()?;
         let crossing = Crossing::from_wind_map(wind_map);
-        Ok(crossing.run(crossing.start, crossing.end, false, 0).to_string())
+        Ok(crossing.run(false, 0).to_string())
     }
     
     fn run2(&self, ipr: input_reader::InputReader) -> Result<String, Box<dyn Error>> {
         let wind_map: WindMap = ipr.whole()?;
         let crossing = Crossing::from_wind_map(wind_map);
         let mut total = 0;
-        total += crossing.run(crossing.start, crossing.end, false, total);
-        total += crossing.run(crossing.start, crossing.end, true, total);
-        total += crossing.run(crossing.start, crossing.end, false, total);
+        total += crossing.run(false, total);
+        total += crossing.run(true, total);
+        total += crossing.run(false, total);
         Ok(total.to_string())
     }
 }

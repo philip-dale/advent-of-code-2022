@@ -229,19 +229,23 @@ impl Point {
         let x_range = match self.x {
             x if x > x_min_value && x < x_max_value => self.x-1..self.x+2,
             x if x == x_min_value => self.x..self.x+2,
+            x if x+1 == x_min_value => self.x+1..self.x+2,
             x if x == x_max_value => self.x-1..self.x+1,
+            x if x-1 == x_max_value => self.x-1..self.x,
             _ => 0..0
         };
 
         let y_range = match self.y {
             y if y > y_min_value && y < y_max_value => self.y-1..self.y+2,
             y if y == y_min_value => self.y..self.y+2,
+            y if y+1 == y_min_value => self.y+1..self.y+2,
             y if y == y_max_value => self.y-1..self.y+1,
+            y if y-1 == y_max_value => self.y-1..self.y,
             _ => 0..0
         };
 
         let mut n:Vec<Self> = Vec::new();
-        if self.y >= y_min_value {
+        if self.y >= y_min_value && self.y <= y_max_value{
             for x in x_range {
                 if x == self.x {
                     continue;
@@ -250,7 +254,7 @@ impl Point {
             }
         }
 
-        if self.x >= x_min_value {
+        if self.x >= x_min_value && self.x <= x_max_value {
             for y in y_range {
                 if y == self.y {
                     continue;
